@@ -1,12 +1,12 @@
 {
-  "name": "swap-micro-pool",
-  "version": "1.4.1",
-  "description": "A minimal Swap Pool",
+  "name": "tube-micro-pool",
+  "version": "1.0.0",
+  "description": "A Tube Mining Stratum Server",
   "main": "main.js",
   "scripts": {
     "start": "electron ."
   },
-  "repository": "https://github.com/swap-dev/micropool-gui",
+  "repository": "https://github.com/tubedev2000/micropool-gui",
   "author": "sebseb7",
   "license": "0bsd",
   "devDependencies": {

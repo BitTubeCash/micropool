@@ -396,7 +396,7 @@ let mainWindow;
 function createWindow () {
 	// Create the browser window.
 	mainWindow = new BrowserWindow({
-		title: 'Swap Micropool',
+		title: 'Bittube Micropool',
 		width: 800,
 		height: 600,
 		minWidth: 800,
@@ -436,7 +436,7 @@ function createWindow () {
 					if(count == 4) {
 						updateJob('init',function(){
 							server.listen(global.poolconfig.poolport,'0.0.0.0');
-							logger.info("start swap micropool, port "+global.poolconfig.poolport);
+							logger.info("start bittube micropool, port "+global.poolconfig.poolport);
 						});
 						setInterval(function(){updateJob('timer');}, 100);}
 					});
