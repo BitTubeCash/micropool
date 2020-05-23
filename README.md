@@ -6,7 +6,7 @@ Minimal Bittube Stratum Server (solopool)
 To run micropool-gui as a nodejs/electronjs app:
 
     $ npm install electron -g
-    $ git clone https://github.com/swap-dev/micropool-gui.git
+    $ git clone https://github.com/tubedev2000/micropool-gui.git
     $ cd micropool-gui
     $ npm install
     $ npm start
@@ -14,7 +14,7 @@ To run micropool-gui as a nodejs/electronjs app:
 To build the micropool as a standalone executable:
 
     $ npm install electron-builder -g
-    $ git clone https://github.com/swap-dev/micropool-gui.git
+    $ git clone https://github.com/tubedev2000/micropool-gui.git
     $ cd micropool-gui
     $ npm install
     $ electron-builder --linux
