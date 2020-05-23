@@ -153,8 +153,8 @@ int c29b_verify(uint8_t *header,int32_t len,uint32_t *cycle) {
 EMSCRIPTEN_KEEPALIVE
 int check_diff(uint32_t diff, uint32_t *cycle) {
 	
-	uint8_t hashdata[116]; // PROOFSIZE*EDGEBITS/8
-	memset(hashdata, 0, 116);
+	uint8_t hashdata[145]; // PROOFSIZE*EDGEBITS/8
+	memset(hashdata, 0, 145);
 
 	int bytepos = 0;
 	int bitpos = 0;
