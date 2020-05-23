@@ -1,7 +1,7 @@
 # micropool-gui
-Minimal Swap Pool Windows GUI
+Minimal Bittube Stratum Server (solopool)
 
-![screenshot](https://cdn.discordapp.com/attachments/541411408953344002/568984595505086475/Capture7.PNG)
+![screenshot](https://cdn.discordapp.com/attachments/713648425849192498/713648446623711232/unknown.png)
 
 To run micropool-gui as a nodejs/electronjs app:
 
