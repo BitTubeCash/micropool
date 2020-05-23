@@ -2,9 +2,9 @@
 const {app, BrowserWindow, ipcMain} = require('electron')
 const storage = require('electron-json-storage');
 
-var c29s = require('./c29s_nowasm.js');
-var verify_c29s = c29s.cwrap('c29s_verify', 'number', ['array','number','array']);
-var check_diff = c29s.cwrap('check_diff', 'number', ['number','array']);
+var c29b = require('./c29b_nowasm.js');
+var verify_c29b = c29b.cwrap('c29b_verify', 'number', ['array','number','array']);
+var check_diff = c29b.cwrap('check_diff', 'number', ['number','array']);
 var shares=0;
 var blocks=0;
 var conn=0;
@@ -125,7 +125,7 @@ function hashrate(miner) {
 
 	miner.shares += miner.difficulty|0;
 
-	var hr = miner.shares*32/((Date.now()/1000|0)-miner.begin);
+	var hr = miner.shares*40/((Date.now()/1000|0)-miner.begin);
 
 	miner.gps = hr;
 	
@@ -177,7 +177,7 @@ function updateJob(reason,callback){
 			for (var minerId in connectedMiners){
 				var miner = connectedMiners[minerId];
 				miner.nonces = [];
-				var response2 = '{"id":"Stratum","jsonrpc":"2.0","method":"getjobtemplate","result":{"algo":"cuckaroo","edgebits":29,"proofsize":32,"noncebytes":4,"difficulty":'+miner.difficulty+',"height":'+current_height+',"job_id":'+seq()+',"pre_pow":"'+current_hashblob+miner.nextnonce()+'"},"error":null}';
+				var response2 = '{"id":"Stratum","jsonrpc":"2.0","method":"getjobtemplate","result":{"algo":"cuckaroo","edgebits":29,"proofsize":40,"noncebytes":4,"difficulty":'+miner.difficulty+',"height":'+current_height+',"job_id":'+seq()+',"pre_pow":"'+current_hashblob+miner.nextnonce()+'"},"error":null}';
 				miner.socket.write(response2+"\n");
 			}
 		}
@@ -289,7 +289,7 @@ function handleClient(data,miner){
 	
 	if(request && request.method && request.method == "submit") {
 
-		if(!request.params || !request.params.pow || !request.params.nonce || request.params.pow.length != 32) {
+		if(!request.params || !request.params.pow || !request.params.nonce || request.params.pow.length != 40) {
 
 			logger.info('bad data ('+miner.login+')');
 			return miner.respose(null,{code: -32502, message: "wrong hash"},request);
@@ -310,11 +310,11 @@ function handleClient(data,miner){
 		noncebuffer.writeUInt32BE(request.params.nonce,0);
 		var header = Buffer.concat([Buffer.from(current_hashblob, 'hex'),Buffer.from(miner.jobnonce,'hex'),noncebuffer]);
 			
-		if(verify_c29s(header,header.length,cycle)){
+		if(verify_c29b(header,header.length,cycle)){
 
 			var header_previous = Buffer.concat([Buffer.from(previous_hashblob, 'hex'),Buffer.from(miner.oldnonce,'hex'),noncebuffer]);
 			
-			if(verify_c29s(header_previous,header_previous.length,cycle)){
+			if(verify_c29b(header_previous,header_previous.length,cycle)){
 			
 				logger.info('wrong hash or very old ('+miner.login+') '+request.params.height);
 				return miner.respose(null,{code: -32502, message: "wrong hash"},request);
@@ -367,7 +367,7 @@ function handleClient(data,miner){
 	
 	if(request && request.method && request.method == "getjobtemplate") {
 		
-		return miner.respose({algo:"cuckaroo",edgebits:29,proofsize:32,noncebytes:4,difficulty:parseFloat(miner.difficulty),height:current_height,job_id:seq(),pre_pow:current_hashblob+miner.nextnonce()},null,request);
+		return miner.respose({algo:"cuckaroo",edgebits:29,proofsize:40,noncebytes:4,difficulty:parseFloat(miner.difficulty),height:current_height,job_id:seq(),pre_pow:current_hashblob+miner.nextnonce()},null,request);
 	}
 	else{
 
