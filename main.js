@@ -189,7 +189,7 @@ function updateJob(reason,callback){
 			mainWindow.webContents.send('get-reply', ['data_diff',result.difficulty]);
 			mainWindow.webContents.send('get-reply', ['data_height',result.height]);
 			mainWindow.webContents.send('get-reply', ['data_netgraphrate', (current_target / 15000 * 32).toFixed(2) + ' KGps' ]);
-			mainWindow.webContents.send('get-reply', ['data_reward',current_reward.toFixed(2) + ' XWP']);
+			mainWindow.webContents.send('get-reply', ['data_reward',current_reward.toFixed(2) + ' TUBE']);
 
 		
 			for (var minerId in connectedMiners){
@@ -390,7 +390,7 @@ function handleClient(data,miner){
 				etaTime.setSeconds(0)
 			}
 			mainWindow.webContents.send('get-reply', ['data_blocketa', etaTime.toISOString().substr(11, 8)+'s']);
-			mainWindow.webContents.send('get-reply', ['data_revenue', ((totalgps * 86400 / current_target) * (current_reward / 32)).toFixed(2) +' XWP']);
+			mainWindow.webContents.send('get-reply', ['data_revenue', ((totalgps * 86400 / current_target) * (current_reward / 32)).toFixed(2) +' TUBE']);
 
 			logger.info('share ('+miner.login+') '+miner.difficulty+' ('+hashrate(miner)+')');
 			return miner.respose('ok',null,request);
