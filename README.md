@@ -3,6 +3,8 @@ Minimal Bittube Stratum Server (solopool)
 
 ![screenshot](https://cdn.discordapp.com/attachments/713648425849192498/713648446623711232/unknown.png)
 
+How to Guide: https://github.com/swap-dev/swap/wiki/Swap-Micropool-How-to-Guide
+
 To run micropool-gui as a nodejs/electronjs app:
 
     $ npm install electron -g
