@@ -11,7 +11,7 @@ var conn=0;
 
 global.poolconfig = { 
 	poolport:0, 
-	ctrlport:14651,// use with https://github.com/swap-dev/on-block-notify.git
+	ctrlport:25651,// use with https://github.com/swap-dev/on-block-notify.git
 	daemonport:0,
 	daemonhost:'',
 	mining_address:''
@@ -32,7 +32,7 @@ function Log() {}
 Log.prototype.log = function (level,message) {mainWindow.webContents.send('log', [level,message]);}
 Log.prototype.info  = function (message) {this.log('info',message);}
 Log.prototype.error = function (message) {this.log('error',message);}
-Log.prototype.debug = function (message) {/*this.log('debug',message);*/}
+Log.prototype.debug = function (message) {this.log('debug',message);}
 const logger = new Log();
 
 process.on("uncaughtException", function(error) {
@@ -190,7 +190,6 @@ function updateJob(reason,callback){
 			mainWindow.webContents.send('get-reply', ['data_height',result.height]);
 			mainWindow.webContents.send('get-reply', ['data_netgraphrate', (current_target / 15000 * 32).toFixed(2) + ' KGps' ]);
 			mainWindow.webContents.send('get-reply', ['data_reward',current_reward.toFixed(2) + ' TUBE']);
-
 		
 			for (var minerId in connectedMiners){
 				var miner = connectedMiners[minerId];
@@ -390,7 +389,7 @@ function handleClient(data,miner){
 				etaTime.setSeconds(0)
 			}
 			mainWindow.webContents.send('get-reply', ['data_blocketa', etaTime.toISOString().substr(11, 8)+'s']);
-			mainWindow.webContents.send('get-reply', ['data_revenue', ((totalgps * 86400 / current_target) * (current_reward / 32)).toFixed(2) +' TUBE']);
+			mainWindow.webContents.send('get-reply', ['data_revenue', ((totalgps * 86400 / current_target) * (current_reward / 32)).toFixed(2)]);
 
 			logger.info('share ('+miner.login+') '+miner.difficulty+' ('+hashrate(miner)+')');
 			return miner.respose('ok',null,request);
