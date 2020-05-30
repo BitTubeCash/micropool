@@ -1,6 +1,7 @@
 // Modules to control application life and create native browser window
 const {app, BrowserWindow, ipcMain} = require('electron')
 const storage = require('electron-json-storage');
+const contextMenu = require('electron-context-menu');
 
 var c29b = require('./c29b_nowasm.js');
 var verify_c29b = c29b.cwrap('c29b_verify', 'number', ['array','number','array']);
@@ -427,6 +428,11 @@ var server = net.createServer(function (localsocket) {
 });
 
 server.timeout = 0;
+
+contextMenu({
+	showInspectElement: false,
+	showSearchWithGoogle: false
+});
 
 let mainWindow;
 
