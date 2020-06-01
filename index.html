@@ -11,6 +11,7 @@
 				updateData();
 				tablinks = document.getElementsByClassName("tablinks");
 				tablinks[0].className += " active";
+				pullExchangeRate();
 			}
 			function openTab(evt, cityName) {
 				var i, tabcontent, tablinks;
@@ -370,7 +371,7 @@
 							</colgroup>
 							<tr>
 								<td class="data">
-                                    <a href="#" id="data_revenue" onclick="switchCurrency()">0.00 TUBE</a>
+									<a href="#" id="data_revenue" onclick="switchCurrency()">0.00 TUBE</a>
 								</td>
 							</tr>
 						</table>
@@ -483,8 +484,9 @@
 			var electron = require('electron');
 			var loglines = [];
 			var blockslines = [];
-            var currency = "TUBE";
-            var exchangeRate = 1;
+			var currency = "TUBE";
+			var exchangeRate = 1;
+			var exchangePrefetch = true;
 
 			function updateData() { 
 				if( (document.getElementById('daemonport').value < 1024)||(document.getElementById('daemonport').value > 65535))
@@ -519,15 +521,22 @@
 			
 			ipcRenderer.on('get-reply', (event, arg) => {
 
-                if (arg[0] == "data_revenue")
-                {
-                    arg[1] *= exchangeRate;
-                    document.getElementById(arg[0]).innerHTML=arg[1]+' '+currency;
-                }
-                else
-                {
-                    document.getElementById(arg[0]).value=arg[1];
-                }
+				if (arg[0] == "data_revenue")
+				{
+					if (currency == "TUBE" || exchangeRate == 1 )
+					{
+						document.getElementById(arg[0]).innerHTML=arg[1].toFixed(2)+' TUBE';
+					}
+					else
+					{
+						arg[1] *= exchangeRate;
+						document.getElementById(arg[0]).innerHTML=arg[1].toFixed(2)+' '+currency;
+					}
+				}
+				else
+				{
+					document.getElementById(arg[0]).value=arg[1];
+				}
 			})
 			ipcRenderer.on('workers', (event, arg) => {
 				document.getElementById('workers').innerHTML=arg;
@@ -562,35 +571,40 @@
 				document.getElementById("networkSelection").classList.toggle("show");
 			}
 
-            function switchCurrency() {
-                if (currency == "TUBE")
-                {
-                    currency="USD";
-                    pullExchangeRate();
-                }
-                else
-                {
-                    currency="TUBE";
-                    exchangeRate=1;
-                }
-                document.getElementById('data_revenue').innerHTML='0.00 '+currency;
-            }
-            setInterval( function(){pullExchangeRate();}, 300000); //every 5min
-            function pullExchangeRate()
-            {
-                if (currency == "USD")
-                {                   
-                    var xmlhttp = new XMLHttpRequest();
-                    xmlhttp.onreadystatechange = function() {
-                        if (this.readyState == 4 && this.status == 200) {
-                            var myObj = JSON.parse(this.responseText);
-                            exchangeRate = myObj.bittube.usd;
-                        }
-                    };
-                    xmlhttp.open("GET", "https://api.coingecko.com/api/v3/simple/price?ids=bittube&vs_currencies=usd", true);
-                    xmlhttp.send(); 
-                }
-            }
+			function switchCurrency() {
+				if (currency == "TUBE")
+				{
+					currency="USD";
+					var profit = parseFloat(document.getElementById('data_revenue').innerHTML) * exchangeRate;
+					if (exchangeRate != 1)
+						document.getElementById('data_revenue').innerHTML=profit.toFixed(2)+' '+currency;
+				}
+				else
+				{
+					currency="TUBE";
+					if (exchangeRate != 1)
+						var profit = parseFloat(document.getElementById('data_revenue').innerHTML) / exchangeRate;
+					document.getElementById('data_revenue').innerHTML=profit.toFixed(2)+' '+currency;
+
+				}
+			}
+			setInterval( function(){pullExchangeRate();}, 300000); //every 5min
+			function pullExchangeRate()
+			{
+				if (currency == "USD" || exchangePrefetch == true)
+				{
+					exchangePrefetch = false;
+					var xmlhttp = new XMLHttpRequest();
+					xmlhttp.onreadystatechange = function() {
+						if (this.readyState == 4 && this.status == 200) {
+							var myObj = JSON.parse(this.responseText);
+							exchangeRate = myObj.bittube.usd;
+						}
+					};
+					xmlhttp.open("GET", "https://api.coingecko.com/api/v3/simple/price?ids=bittube&vs_currencies=usd", true);
+					xmlhttp.send(); 
+				}
+			}
 
 			window.onclick = function(event) {
 				if (!event.target.matches('.dropbtn')) {
