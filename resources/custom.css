@@ -122,8 +122,10 @@ input {
 	background-color:#121212;
 	border-radius: 0.25rem;
 }
-.log_level {
+#log_level {
 	color:#454545;
+    margin-left: 5px;
+    margin-right: 5px;
 }
 .blocks_hash a {
 	color:#00abff;

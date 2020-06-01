@@ -540,7 +540,7 @@
 			ipcRenderer.on('log', (event, msg) => {
 				var d = new Date();
 				if ( (logLevel == 0 && msg[0] != "debug") || (logLevel == 1) )
-					loglines.unshift(d.toISOString().substr(0, 19)+'&emsp;<span id=log_level>['+msg[0]+']</span> '+msg[1]);
+					loglines.unshift(Date(Date.now()).substr(4, 20)+' <span id=log_level>['+msg[0]+']</span> '+msg[1]);
 				if (loglines.length > 100) loglines.pop();
 				document.getElementById('log').innerHTML=loglines.join('<br/>');
 			});
