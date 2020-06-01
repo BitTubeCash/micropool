@@ -355,12 +355,14 @@ function handleClient(data,miner){
 			block.writeUInt32LE(request.params.nonce,47);
 			Buffer.from(miner.jobnonce, 'hex').copy(block,39,0,8);
 
+			var block_found_height = current_height;
+
 			rpc('submitblock', [block.toString('hex')], function(error, result){
 				logger.info('BLOCK ('+miner.login+')');
 				updateJob('found block');
 				blocks++;
 				mainWindow.webContents.send('get-reply', ['data_blocks',blocks]);
-				blockstxt+=(current_height-1)+' '+((jobshares/current_target*100).toFixed(2))+'%<br/>';
+				blockstxt+=block_found_height+' '+((jobshares/current_target*100).toFixed(2))+'%<br/>';
 				totalEffort+=jobshares/current_target;
 				jobshares=0;
 				mainWindow.webContents.send('blocks', blockstxt);
