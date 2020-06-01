@@ -181,7 +181,7 @@ function updateJob(reason,callback){
 			current_blob     = result.blocktemplate_blob;
 			current_hashblob = result.blockhashing_blob.slice(0,-16);	
 			current_height   = result.height;
-			current_reward   = result.expected_reward / Math.pow (10,12);
+			current_reward   = result.expected_reward / Math.pow (10,9);
 			
 			jobcounter++;
 
