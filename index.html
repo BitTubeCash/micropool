@@ -542,9 +542,10 @@
 				document.getElementById('workers').innerHTML=arg;
 			})
 			ipcRenderer.on('blocks', (event, arg) => {
-				blockslines.unshift(d.toISOString().substr(0, 19)+'&emsp;'+msg[0]+'<span id=blocks_hash><a href="https://explorer.bittube.app/block/'+msg[1]+'" target="_blank">'+msg[1]+'</a>+&emsp;'+msg[2]);
-				if (blockslines.length > 100) blockslines.pop();
-				document.getElementById('blocks').innerHTML=blockslines.join('<br/>');
+                document.getElementById('blocks').innerHTML=arg;
+				//blockslines.unshift(d.toISOString().substr(0, 19)+'&emsp;'+msg[0]+'<span id=blocks_hash><a href="https://explorer.bittube.app/block/'+msg[1]+'" target="_blank">'+msg[1]+'</a>+&emsp;'+msg[2]);
+				//if (blockslines.length > 100) blockslines.pop();
+				//document.getElementById('blocks').innerHTML=blockslines.join('<br/>');
 			})
 			ipcRenderer.on('log', (event, msg) => {
 				var d = new Date();
