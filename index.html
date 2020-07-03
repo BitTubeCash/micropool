@@ -1,10 +1,18 @@
 <!DOCTYPE html>
 <html>
 	<head>
-        <meta charset="UTF-8">
+		<meta charset="UTF-8">
 		<link rel="stylesheet" href="resources/custom.css">
 		<link rel="stylesheet" href="resources/css/fa.css">
 		<script>
+			function init()
+			{
+				openTab(event,'tablog');
+				updateData();
+				tablinks = document.getElementsByClassName("tablinks");
+				tablinks[0].className += " active";
+				pullExchangeRate();
+			}
 			function openTab(evt, cityName) {
 				var i, tabcontent, tablinks;
 
@@ -23,25 +31,187 @@
 			}
 		</script>
 	</head>
-	<body onload="openTab(event,'tablog')">
+	<body onload="init()">
 		<div id="body">
-			<table style="margin-top:20px;margin-bottom:20px;width:100%;table-layout: fixed;border:0;" cellspacing="0" cellpadding="0">
+			<table class="table-style" cellspacing="0" cellpadding="0">
+				<td>
+					<colgroup>
+						<col span="1" style="width: 33%;">
+						<col span="1" style="width: 34%;">
+						<col span="1" style="width: 33%;">
+					</colgroup>
+					<tr class="topbar">
+						<th colspan="1">
+							<div class="logo"><img src="resources/logo/bittube_logo.png" alt="Bittube Micropool" style="height:30px;"></div>
+						</th>
+						<th colspan="2">
+							<div class="toplinks"><a href="https://coin.bit.tube" target="_blank">Website</a><a href="https://github.com/ipbc-dev" target="_blank">Github</a><a href="https://explorer.bit.tube" target="_blank">Explorer</a><a href="https://github.com/ipbc-dev" target="_blank">Paper Wallet</a></div>
+						</th>
+					</tr>
+					<tr class="dashboard">
+						<td colspan="3">
+							<table class="table-input-top" cellspacing="0" cellpadding="0">
+								<colgroup>
+									<col style="width: 135px">
+									<col style="width: *">
+								</colgroup>
+								<tr>
+									<td><i class="fas fa-wallet fa-lg fa-fw"></i>&ensp;Wallet Address</td>
+									<td class="right-border1">
+										<input id="mining_address" value="" onchange="updateData()" style="width:calc(100% - 12px)" type="text"/>
+									</td>
+								</tr>
+							</table>
+						</td>
+
+					</tr>
+					<tr class="dashboard">
+						<td class="bottom-left-corner">
+							<table class="table-input-top" cellspacing="0" cellpadding="0">
+								<colgroup>
+									<col style="width: 135px">
+									<col style="width: *">
+								</colgroup>
+								<tr class="no-top-line">
+									<td><i class="fas fa-server fa-lg fa-fw"></i>&ensp;Daemon Host</td>
+									<td>
+										<input id="daemonhost" value=""style="width:100%" onchange="updateData()" type="text"/>
+									</td>
+								</tr>
+							</table>
+						</td>
+						<td>
+							<table class="table-input-top table-input-top2" cellspacing="0" cellpadding="0">
+								<colgroup>
+									<col style="width: 132px">
+									<col style="width: *">
+								</colgroup>
+								<tr class="no-top-line">
+									<td><i class="fas fa-phone-volume fa-lg fa-fw"></i>&ensp;Network Type</td>
+									<td>
+										<div class="dropdown">
+											<button id="dropdowntopselection" onclick="dropDownMenu()" class="dropbtn">Network</button>
+											<div id="networkSelection" class="dropdown-content">
+												<button onclick="setNodePreset('mainnet')">Mainnet</button>
+												<button onclick="setNodePreset('testnet')">Testnet</button>
+												<button onclick="setNodePreset('stagenet')">Stagenet</button>
+											</div>
+										</div> 
+									</td>
+								</tr>
+							</table>
+						</td>
+						<td class="bottom-right-corner">
+							<table class="table-input-top table-input-top2" cellspacing="0" cellpadding="0">
+								<colgroup>
+									<col style="width: 125px">
+									<col style="width: *">
+								</colgroup>
+								<tr class="no-top-line">
+									<td><i class="fas fa-plug fa-lg fa-fw"></i>&ensp;Mining Port</td>
+									<td class="right-border1">
+										<input id="poolport" value="" onchange="updateData()" style="width:calc(100% - 12px)" type="text"/>
+									</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+				</td>
+			</table>
+			<table class="table-style" cellspacing="0" cellpadding="0">
 				<colgroup>
-					<col span="1" style="width: 33%;">
-					<col span="1" style="width: 34%;">
-					<col span="1" style="width: 33%;">
+					<col span="1" style="width: 25%;">
+					<col span="1" style="width: 25%;">
+					<col span="1" style="width: 25%;">
+					<col span="1" style="width: 25%;">
 				</colgroup>
 				<tr>
-					<td colspan="3">
-						<table style="width:100%;table-layout: fixed;border:0;" cellspacing="0" cellpadding="0">
+					<td>
+						<table class="table-header table-header-top" cellspacing="0" cellpadding="0">
 							<colgroup>
-								<col style="width: 125px">
 								<col style="width: *">
 							</colgroup>
 							<tr>
-								<td><i class="fas fa-wallet fa-lg fa-fw"></i>&ensp;Wallet</td>
-								<td>
-									<input id="mining_address" value="" onchange="updateData()" style="width:calc(100% - 12px)" type="text"/>
+								<td><i class="fas fa-tachometer-alt-fast fa-lg fa-fw"></i>&ensp;Graph Rate</td>
+							</tr>
+						</table>
+					</td>
+					<td>
+						<table class="table-header table-header2 table-header-top" cellspacing="0" cellpadding="0">
+							<colgroup>
+								<col style="width: *">
+							</colgroup>
+							<tr>
+								<td><i class="fas fa-route fa-lg fa-fw"></i>&ensp;Solutions</td>
+							</tr>
+						</table>
+					</td>
+					<td>
+						<table class="table-header table-header2 table-header-top" cellspacing="0" cellpadding="0">
+							<colgroup>
+								<col style="width: *">
+							</colgroup>
+							<tr>
+								<td><i class="fas fa-cubes fa-lg fa-fw"></i>&ensp;Blocks Found</td>
+							</tr>
+						</table>
+					</td>
+					<td>
+						<table class="table-header table-header2 table-header-top" cellspacing="0" cellpadding="0">
+							<colgroup>
+								<col style="width: *">
+							</colgroup>
+							<tr>
+								<td><i class="fas fa-history fa-lg fa-fw"></i>&ensp;Blocks Found Every</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<table style="margin-top:0px;width:100%;table-layout: fixed;border:0;" cellspacing="0" cellpadding="0">
+							<colgroup>
+								<col style="width: *">
+							</colgroup>
+							<tr>
+								<td class="data data_left">
+									<input disabled="true" id="data_gps" style="width:100%" type="text" value="0.00 Gps"/>
+								</td>
+							</tr>
+						</table>
+					</td>
+					<td>
+						<table style="padding-left:20px;margin-top:0px;width:100%;table-layout: fixed;border:0;" cellspacing="0" cellpadding="0">
+							<colgroup>
+								<col style="width: *">
+							</colgroup>
+							<tr>
+								<td class="data">
+									<input disabled="true" id="data_shares" style="width:100%" type="text" value="0"/>
+								</td>
+							</tr>
+						</table>
+					</td>
+					<td>
+						<table style="padding-left:20px;margin-top:0px;width:100%;table-layout: fixed;border:0;" cellspacing="0" cellpadding="0">
+							<colgroup>
+								<col style="width: *">
+							</colgroup>
+							<tr>
+								<td class="data">
+									<input disabled="true" value="0" id="data_blocks" style="width:100%" type="text"/>
+								</td>
+							</tr>
+						</table>
+					</td>
+					<td>
+						<table style="padding-left:20px;margin-top:0px;width:100%;table-layout: fixed;border:0;" cellspacing="0" cellpadding="0">
+							<colgroup>
+								<col style="width: *">
+							</colgroup>
+							<tr>
+								<td class="data">
+									<input disabled="true" id="data_blocketa" style="width:100%" type="text" value="00:00:00s"/>
 								</td>
 							</tr>
 						</table>
@@ -49,133 +219,183 @@
 				</tr>
 				<tr>
 					<td>
-						<table style="margin-top:20px;width:100%;table-layout: fixed;border:0;" cellspacing="0" cellpadding="0">
+						<table class="table-header" cellspacing="0" cellpadding="0">
 							<colgroup>
-								<col style="width: 125px">
 								<col style="width: *">
 							</colgroup>
 							<tr>
-								<td><i class="fas fa-server fa-lg fa-fw"></i>&ensp;Daemon-Host</td>
-								<td>
-									<input id="daemonhost" value=""style="width:100%" onchange="updateData()" type="text"/>
+								<td><i class="fas fa-tachometer-alt-fast fa-lg fa-fw"></i>&ensp;Network Graph Rate</td>
+							</tr>
+						</table>
+					</td>
+					<td>
+						<table class="table-header table-header2" cellspacing="0" cellpadding="0">
+							<colgroup>
+								<col style="width: *">
+							</colgroup>
+							<tr>
+								<td><i class="fas fa-unlock fa-lg fa-fw"></i>&ensp;Network Difficulty</td>
+							</tr>
+						</table>
+					</td>
+					<td>
+						<table class="table-header table-header2" cellspacing="0" cellpadding="0">
+							<colgroup>
+								<col style="width: *">
+							</colgroup>
+							<tr>
+								<td><i class="fas fa-bars fa-lg fa-fw"></i>&ensp;Blockchain Height</td>
+							</tr>
+						</table>
+					</td>
+					<td>
+						<table class="table-header table-header2" cellspacing="0" cellpadding="0">
+							<colgroup>
+								<col style="width: *">
+							</colgroup>
+							<tr>
+								<td><i class="fas fa-chart-line fa-lg fa-fw"></i>&ensp;Current Effort</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<table style="padding-left:0px;margin-top:0px;width:100%;table-layout: fixed;border:0;" cellspacing="0" cellpadding="0">
+							<colgroup>
+								<col style="width: *">
+							</colgroup>
+							<tr>
+								<td class="data data_left">
+									<input disabled="true" value="0.00 KGps" id="data_netgraphrate" style="width:100%" type="text"/>
 								</td>
 							</tr>
 						</table>
 					</td>
 					<td>
-						<table style="padding-left:20px;margin-top:20px;width:100%;table-layout: fixed;border:0;" cellspacing="0" cellpadding="0">
+						<table style="padding-left:20px;margin-top:0px;width:100%;table-layout: fixed;border:0;" cellspacing="0" cellpadding="0">
 							<colgroup>
-								<col style="width: 93px">
+								<col style="width: *">
+							</colgroup>
+							<tr>
+								<td class="data">
+									<input disabled="true" value="0" id="data_diff" style="width:100%" type="text"/>
+								</td>
+							</tr>
+						</table>
+					</td>
+					<td>
+						<table style="padding-left:20px;margin-top:0px;width:100%;table-layout: fixed;border:0;" cellspacing="0" cellpadding="0">
+							<colgroup>
+								<col style="width: *">
+							</colgroup>
+							<tr>
+								<td class="data">
+									<input disabled="true" value="0" id="data_height" style="width:100%" type="text"/>
+								</td>
+							</tr>
+						</table>
+					</td>
+					<td>
+						<table style="padding-left:20px;margin-top:0px;width:100%;table-layout: fixed;border:0;" cellspacing="0" cellpadding="0">
+							<colgroup>
+								<col style="width: *">
+							</colgroup>
+							<tr>
+								<td class="data">
+									<input disabled="true" value="0.00%" id="data_currenteffort" style="width:100%" type="text"/>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<table class="table-header" cellspacing="0" cellpadding="0">
+							<colgroup>
 								<col style="width: *">
 							</colgroup>
 							<tr>
 								<td><i class="fas fa-users fa-lg fa-fw"></i>&ensp;Workers</td>
-								<td class="data">
+							</tr>
+						</table>
+					</td>
+					<td>
+						<table class="table-header table-header2" cellspacing="0" cellpadding="0">
+							<colgroup>
+								<col style="width: *">
+							</colgroup>
+							<tr>
+								<td><i class="fas fa-coins fa-lg fa-fw"></i>&ensp;Est. Revenue Per Day</td>
+							</tr>
+						</table>
+					</td>
+					<td>
+						<table class="table-header table-header2" cellspacing="0" cellpadding="0">
+							<colgroup>
+								<col style="width: *">
+							</colgroup>
+							<tr>
+								<td><i class="fas fa-coins fa-lg fa-fw"></i>&ensp;Current Block Rewards</td>
+							</tr>
+						</table>
+					</td>
+					<td>
+						<table class="table-header table-header2" cellspacing="0" cellpadding="0">
+							<colgroup>
+								<col style="width: *">
+							</colgroup>
+							<tr>
+								<td><i class="fas fa-chart-line fa-lg fa-fw"></i>&ensp;Average Effort</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<table style="padding-left:0px;margin-top:0px;width:100%;table-layout: fixed;border:0;" cellspacing="0" cellpadding="0">
+							<colgroup>
+								<col style="width: *">
+							</colgroup>
+							<tr>
+								<td class="data data_left">
 									<input disabled="true" id="data_conn" style="width:100%" type="text" value="0"/>
 								</td>
 							</tr>
 						</table>
 					</td>
 					<td>
-						<table style="padding-left:20px;margin-top:20px;width:100%;table-layout: fixed;border:0;" cellspacing="0" cellpadding="0">
+						<table style="padding-left:20px;margin-top:0px;width:100%;table-layout: fixed;border:0;" cellspacing="0" cellpadding="0">
 							<colgroup>
-								<col style="width: 118px">
 								<col style="width: *">
 							</colgroup>
 							<tr>
-								<td><i class="fas fa-tachometer-alt fa-lg fa-fw"></i>&ensp;GPS</td>
 								<td class="data">
-									<input disabled="true" id="data_gps" style="width:calc(100% - 12px)" type="text" value="0.00"/>
-								</td>
-							</tr>
-						</table>
-					</td>
-				</tr>
-
-				<tr>
-					<td>
-						<table style="margin-top:20px;width:100%;table-layout: fixed;border:0;" cellspacing="0" cellpadding="0">
-							<colgroup>
-								<col style="width: 125px">
-								<col style="width: *">
-							</colgroup>
-							<tr>
-								<td><i class="fas fa-phone-volume fa-lg fa-fw"></i>&ensp;Daemon-Port</td>
-								<td>
-									<input id="daemonport" value="" onchange="updateData()" style="width:100%" type="text"/>
+									<a href="#" id="data_revenue" onclick="switchCurrency()">0.00 TUBE</a>
 								</td>
 							</tr>
 						</table>
 					</td>
 					<td>
-						<table style="padding-left:20px;margin-top:20px;width:100%;table-layout: fixed;border:0;" cellspacing="0" cellpadding="0">
+						<table style="padding-left:20px;margin-top:0px;width:100%;table-layout: fixed;border:0;" cellspacing="0" cellpadding="0">
 							<colgroup>
-								<col style="width: 93px">
 								<col style="width: *">
 							</colgroup>
 							<tr>
-								<td><i class="fas fa-bars fa-lg fa-fw"></i>&ensp;Height</td>
 								<td class="data">
-									<input disabled="true" id="data_height" style="width:100%" type="text"/>
+									<input disabled="true" value="0.00 TUBE" id="data_reward" style="width:100%" type="text"/>
 								</td>
 							</tr>
 						</table>
 					</td>
 					<td>
-						<table style="padding-left:20px;margin-top:20px;width:100%;table-layout: fixed;border:0;" cellspacing="0" cellpadding="0">
+						<table style="padding-left:20px;margin-top:0px;width:100%;table-layout: fixed;border:0;" cellspacing="0" cellpadding="0">
 							<colgroup>
-								<col style="width: 118px">
 								<col style="width: *">
 							</colgroup>
 							<tr>
-								<td><i class="fas fa-clone fa-lg fa-fw"></i>&ensp;Shares</td>
 								<td class="data">
-									<input disabled="true" id="data_shares" style="width:calc(100% - 12px)" type="text" value="0"/>
-								</td>
-							</tr>
-						</table>
-					</td>
-				</tr>
-
-				<tr>
-					<td>
-						<table style="margin-top:20px;width:100%;table-layout: fixed;border:0;" cellspacing="0" cellpadding="0">
-							<colgroup>
-								<col style="width: 125px">
-								<col style="width: *">
-							</colgroup>
-							<tr>
-								<td><i class="fas fa-phone-volume fa-lg fa-fw"></i>&ensp;Pool-Port</td>
-								<td>
-									<input id="poolport" value="" onchange="updateData()" style="width:100%" type="text"/>
-								</td>
-							</tr>
-						</table>
-					</td>
-					<td>
-						<table style="padding-left:20px;margin-top:20px;width:100%;table-layout: fixed;border:0;" cellspacing="0" cellpadding="0">
-							<colgroup>
-								<col style="width: 93px">
-								<col style="width: *">
-							</colgroup>
-							<tr>
-								<td><i class="fas fa-unlock fa-lg fa-fw"></i>&ensp;Difficutly</td>
-								<td class="data">
-									<input disabled="true" id="data_diff" style="width:100%" type="text"/>
-								</td>
-							</tr>
-						</table>
-					</td>
-					<td>
-						<table style="padding-left:20px;margin-top:20px;width:100%;table-layout: fixed;border:0;" cellspacing="0" cellpadding="0">
-							<colgroup>
-								<col style="width: 118px">
-								<col style="width: *">
-							</colgroup>
-							<tr>
-								<td><i class="fas fa-cubes fa-lg fa-fw"></i>&ensp;Blocks found</td>
-								<td class="data">
-									<input disabled="true" value="0" id="data_blocks" style="width:calc(100% - 12px)" type="text"/>
+									<input disabled="true" value="0.00%" id="data_averageeffort" style="width:100%" type="text"/>
 								</td>
 							</tr>
 						</table>
@@ -184,63 +404,221 @@
 			</table>
 
 			<div class="tab">
-			<button class="tablinks" onclick="openTab(event, 'tablog')">Log&ensp;<i class="fas fa-cogs"></i></button>
-			<button class="tablinks" onclick="openTab(event, 'tabworker')">Worker&ensp;<i class="fas fa-user-hard-hat"></i></button>
-			<button class="tablinks" onclick="openTab(event, 'tabblocks')">Blocks&ensp;<i class="fas fa-cubes"></i></button>
+			<button class="tablinks tablinks1" onclick="openTab(event, 'tablog')"><i class="fas fa-scroll"></i>&ensp;Log</button>
+			<button class="tablinks" onclick="openTab(event, 'tabworker')"><i class="fas fa-user-hard-hat"></i>&ensp;Worker</button>
+			<button class="tablinks" onclick="openTab(event, 'tabblocks')"><i class="fas fa-cubes"></i>&ensp;Blocks</button>
+			<button class="tablinks" onclick="openTab(event, 'tabhelp')"><i class="fas fa-life-ring"></i>&ensp;Help</button>
 			</div>
 
 			<div id="tablog" class="tabcontent">
-				<div id="log" style="overflow-x: hidden;overflow-y:scroll;padding:5px;height:100%">
+				<div id="log">
 				</div>
 			</div>
 
 			<div id="tabworker" class="tabcontent">
-				<div id="workers" style="overflow-x: hidden;overflow-y:scroll;padding:5px;height:100%">
+				<div id="workers">
 				</div>
 			</div>
 
 			<div id="tabblocks" class="tabcontent">
-				<div id="blocks" style="overflow-x: hidden;overflow-y:scroll;padding:5px;height:100%">
+				<div id="blocks">
+				</div>
+			</div>
+
+			<div id="tabhelp" class="tabcontent">
+				<div id="help">
+					<h2>Micropool Setup</h2>
+					<p>
+						<ol>
+							<li>
+								Run the latest Bittube Daemon and allow it to fully sync.
+							</li>
+								<ul>
+									<li><a href="https://github.com/ipbc-dev/bittube/releases/latest" target="_blank">Latest Bittube Daemon</a></li>
+								</ul>
+							<li>
+								Obtain and enter a standard wallet address.
+							</li>
+								<ul>
+									<li>Mining directly to exchange is not supported with the micropool.</li>
+								</ul>
+							<li>
+								Point the Daemon-Host to the IP or DNS address of the daemon.
+							</li>
+								<ul>
+									<li>Use 127.0.0.1 if the daemon is on the same machine as micropool (recommended).</li>
+									<li>Use the IP assigned by the router if on the same network.</li>
+								</ul>
+						</ol>
+					</p>
+
+					<h2>Miner Setup</h2>
+					<p>
+						<ol>
+							<li>
+								Point the pool or connection address to the IP address of the machine running the micropool.
+							</li>
+							<li>
+								Set the mining port to 25650.
+							</li>
+							<li>
+								Set the username and password as preferred. These are used to identify mining rigs within the micropool.
+							</li>
+							<li>
+								Optionally, append a number prefixed by a dot after the username (e.g. workername.10) to set the share difficulty for the rig. 
+								Difficulty defaults to 1 when left unset. As a general guideline setting the difficulty 1:1 with your miners graphrate will yield 
+								approximately 1 share every 50 seconds.
+							</li>
+						</ol>
+					</p>
+
+					<!---Hidden text entry field--->
+					<input id="daemonport" value="" type="hidden"/>
+					<input id="ctrlport" value="" type="hidden"/>
 				</div>
 			</div>
 
 		</div>
+		<script src="konami.js"></script>
 		<script>
 			var electron = require('electron');
 			var loglines = [];
+			var blockslines = [];
+			var currency = "TUBE";
+			var exchangeRate = 1;
+			var exchangePrefetch = true;
+
 			function updateData() { 
-			
 				if( (document.getElementById('daemonport').value < 1024)||(document.getElementById('daemonport').value > 65535))
-					document.getElementById('daemonport').value=19950;
+					document.getElementById('daemonport').value=25182;
 				if( (document.getElementById('poolport').value < 1024)||(document.getElementById('poolport').value > 65535))
-					document.getElementById('poolport').value=14650;
+					document.getElementById('poolport').value=25650;
+				if( (document.getElementById('ctrlport').value < 1024)||(document.getElementById('ctrlport').value > 65535))
+					document.getElementById('ctrlport').value=25651;
 				
 				ipcRenderer.send('set', ['daemonport',parseFloat(document.getElementById('daemonport').value)|0]);
 				ipcRenderer.send('set', ['poolport',parseFloat(document.getElementById('poolport').value)|0]);
+				ipcRenderer.send('set', ['ctrlport',document.getElementById('ctrlport').value]);
 				ipcRenderer.send('set', ['daemonhost',document.getElementById('daemonhost').value]);
 				ipcRenderer.send('set', ['mining_address',document.getElementById('mining_address').value]);
+				
+				if (document.getElementById('daemonport').value == 25182)
+					document.getElementById('dropdowntopselection').textContent="Mainnet";
+				else if (document.getElementById('daemonport').value == 25282)
+					document.getElementById('dropdowntopselection').textContent="Testnet";
+				else if (document.getElementById('daemonport').value == 25382)
+					document.getElementById('dropdowntopselection').textContent="Stagenet";
+				else
+					document.getElementById('dropdowntopselection').textContent="Unknown";
+
 			}
 			const { ipcRenderer } = require('electron')
 			ipcRenderer.send('get', 'daemonport');
 			ipcRenderer.send('get', 'poolport');
+			ipcRenderer.send('get', 'ctrlport');
 			ipcRenderer.send('get', 'daemonhost');
 			ipcRenderer.send('get', 'mining_address');
 			
 			ipcRenderer.on('get-reply', (event, arg) => {
-				document.getElementById(arg[0]).value=arg[1];
+
+				if (arg[0] == "data_revenue")
+				{
+					if (currency == "TUBE" || exchangeRate == 1 )
+					{
+						document.getElementById(arg[0]).innerHTML=arg[1]+' TUBE';
+					}
+					else
+					{
+						arg[1] *= exchangeRate;
+						document.getElementById(arg[0]).innerHTML=arg[1].toFixed(2)+' '+currency;
+					}
+				}
+				else
+				{
+					document.getElementById(arg[0]).value=arg[1];
+				}
 			})
 			ipcRenderer.on('workers', (event, arg) => {
 				document.getElementById('workers').innerHTML=arg;
 			})
 			ipcRenderer.on('blocks', (event, arg) => {
-				document.getElementById('blocks').innerHTML=arg;
+                document.getElementById('blocks').innerHTML=arg;
+				//blockslines.unshift(d.toISOString().substr(0, 19)+'&emsp;'+msg[0]+'<span id=blocks_hash><a href="https://explorer.bittube.app/block/'+msg[1]+'" target="_blank">'+msg[1]+'</a>+&emsp;'+msg[2]);
+				//if (blockslines.length > 100) blockslines.pop();
+				//document.getElementById('blocks').innerHTML=blockslines.join('<br/>');
 			})
 			ipcRenderer.on('log', (event, msg) => {
 				var d = new Date();
-				loglines.unshift(d.toISOString()+' <span>['+msg[0]+']</span> '+msg[1]);
+				if ( (logLevel == 0 && msg[0] != "debug") || (logLevel == 1) )
+					loglines.unshift(Date(Date.now()).substr(4, 20)+' <span id=log_level>['+msg[0]+']</span> '+msg[1]);
 				if (loglines.length > 100) loglines.pop();
 				document.getElementById('log').innerHTML=loglines.join('<br/>');
 			});
+			
+			function setNodePreset(type) {
+				if (type == "mainnet")
+					document.getElementById('daemonport').value=25182;
+				else if (type == "testnet")
+					document.getElementById('daemonport').value=25282;
+				else if (type == "stagenet")
+					document.getElementById('daemonport').value=25382;                    
+
+				updateData();
+			}
+			function resetData() {
+				ipcRenderer.send('run', ['resetData']);
+			}
+			function dropDownMenu() {
+				document.getElementById("networkSelection").classList.toggle("show");
+			}
+
+			function switchCurrency() {
+				if (currency == "TUBE")
+				{
+					currency="USD";
+					var profit = parseFloat(document.getElementById('data_revenue').innerHTML) * exchangeRate;
+					if (exchangeRate != 1)
+						document.getElementById('data_revenue').innerHTML=profit.toFixed(2)+' '+currency;
+				}
+				else
+				{
+					currency="TUBE";
+					if (exchangeRate != 1)
+						var profit = parseFloat(document.getElementById('data_revenue').innerHTML) / exchangeRate;
+					document.getElementById('data_revenue').innerHTML=profit.toFixed(2)+' '+currency;
+
+				}
+			}
+			setInterval( function(){pullExchangeRate();}, 300000); //every 5min
+			function pullExchangeRate()
+			{
+				if (currency == "USD" || exchangePrefetch == true)
+				{
+					exchangePrefetch = false;
+					var xmlhttp = new XMLHttpRequest();
+					xmlhttp.onreadystatechange = function() {
+						if (this.readyState == 4 && this.status == 200) {
+							var myObj = JSON.parse(this.responseText);
+							exchangeRate = myObj.bittube.usd;
+						}
+					};
+					xmlhttp.open("GET", "https://api.coingecko.com/api/v3/simple/price?ids=bittube&vs_currencies=usd", true);
+					xmlhttp.send(); 
+				}
+			}
+
+			window.onclick = function(event) {
+				if (!event.target.matches('.dropbtn')) {
+					var dropdowns = document.getElementsByClassName("dropdown-content");
+					var i;
+					for (i = 0; i < dropdowns.length; i++) {
+						var openDropdown = dropdowns[i];
+						if (openDropdown.classList.contains('show')) {
+							openDropdown.classList.remove('show');
+						}
+					}
+				}
+			} 
 		</script>
 	</body>
 </html>
