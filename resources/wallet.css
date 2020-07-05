@@ -1,0 +1,78 @@
+@font-face {
+	font-family: "Roboto";
+	src: url('webfonts/Roboto-Regular.ttf');
+}
+@font-face {
+	font-family: "Roboto-Thin";
+	src: url('webfonts/Roboto-Thin.ttf');
+}
+body {
+	font-family: "Roboto-Thin";
+	margin:25px;
+	background-color:#121212;
+	background-image:url('background/triangles.png'),url('background/back_cubes.png');
+	background-repeat:no-repeat,no-repeat;
+	background-size:125%,110%;
+	background-attachment: fixed;
+	background-position: top,top; 
+}
+div {
+	font-family: "Roboto";
+	color: #eeeeee;
+	word-wrap: break-word;
+}
+button {
+	font-family: "Roboto";
+	font-size: 1rem;
+	color: #eeeeee;
+	margin-top: 15px;
+	background-color: #00abff;
+	border-color: #00abff;
+	outline:none; 
+	border: none;
+	cursor: pointer;
+	transition: 0.3s;
+	border-radius: 0px;
+	height: 30px;
+	padding: 0px 20px;
+}
+.card {
+	font-family: "Roboto-Thin";
+	font-size: 1rem;
+	color: #00abff;
+	display: inline-block;
+	position: relative;
+	width: calc(100% - 25px);
+	margin: 0;
+	padding: 15px;
+	box-shadow: 0 1px 4px 0 rgba(0, 0, 0, 0.14);
+	border-radius: 4px;
+	background: #272727;
+}
+.card-info {
+	color: #eeeeee;
+}
+.form-control {
+	font-family: "Roboto-Thin";
+	font-size: 1rem;
+	color: #eeeeee;
+	width: calc(100% - 25px);
+	border: solid 0px #dcdcdc;
+	border-color: #444444;
+	background-color: #1e1e1e;
+	outline: none; 
+	padding: 0px 10px;
+	height: 30px;
+}
+::-webkit-scrollbar {
+	width: 0.8em;
+}
+::-webkit-scrollbar-track {
+	background: #151515; 
+}
+::-webkit-scrollbar-thumb {
+	background: #eeeeee50; 
+}
+::-webkit-scrollbar-thumb:hover {
+	background: #eeeeee50; 
+}
