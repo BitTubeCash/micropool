@@ -1,14 +1,13 @@
 # micropool-gui
-Minimal Bittube Stratum Server (solopool)
 
-![screenshot](https://cdn.discordapp.com/attachments/713648425849192498/713648446623711232/unknown.png)
+Minimal BittubeCash Stratum Server (solopool)
 
-How to Guide: https://github.com/swap-dev/swap/wiki/Swap-Micropool-How-to-Guide
+![screenshot](https://cdn.discordapp.com/attachments/713648425849192498/730138392825823332/unknown.png)
 
 To run micropool-gui as a nodejs/electronjs app:
 
     $ npm install electron -g
-    $ git clone https://github.com/tubedev2000/micropool-gui.git
+    $ git clone https://github.com/BitTubeCash/micropool-gui.git
     $ cd micropool-gui
     $ npm install
     $ npm start
@@ -16,7 +15,7 @@ To run micropool-gui as a nodejs/electronjs app:
 To build the micropool as a standalone executable:
 
     $ npm install electron-builder -g
-    $ git clone https://github.com/tubedev2000/micropool-gui.git
+    $ git clone https://github.com/BitTubeCash/micropool-gui.git
     $ cd micropool-gui
     $ npm install
     $ electron-builder --linux
