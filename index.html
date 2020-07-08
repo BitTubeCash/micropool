@@ -52,7 +52,7 @@
 						<td colspan="3">
 							<table class="table-input-top" cellspacing="0" cellpadding="0">
 								<colgroup>
-									<col style="width: 135px">
+									<col style="width: 160px">
 									<col style="width: *">
 								</colgroup>
 								<tr>
@@ -66,10 +66,10 @@
 
 					</tr>
 					<tr class="dashboard">
-						<td class="bottom-left-corner">
+						<td>
 							<table class="table-input-top" cellspacing="0" cellpadding="0">
 								<colgroup>
-									<col style="width: 135px">
+									<col style="width: 160px">
 									<col style="width: *">
 								</colgroup>
 								<tr class="no-top-line">
@@ -101,7 +101,7 @@
 								</tr>
 							</table>
 						</td>
-						<td class="bottom-right-corner">
+						<td>
 							<table class="table-input-top table-input-top2" cellspacing="0" cellpadding="0">
 								<colgroup>
 									<col style="width: 125px">
@@ -111,6 +111,53 @@
 									<td><i class="fas fa-plug fa-lg fa-fw"></i>&ensp;Mining Port</td>
 									<td class="right-border1">
 										<input id="poolport" value="" onchange="updateData()" style="width:calc(100% - 12px)" type="text"/>
+									</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+					<tr class="dashboard">
+						<td class="bottom-left-corner">
+							<table class="table-input-top" cellspacing="0" cellpadding="0">
+								<colgroup>
+									<col style="width: 160px">
+									<col style="width: *">
+								</colgroup>
+								<tr class="no-top-line">
+									<td><i class="fas fa-desktop fa-lg fa-fw"></i>&ensp;Embedded Daemon</td>
+									<td>
+										<label class="switch">
+											<input type="checkbox" id="switch_embed" onclick="handle_embed(this)">
+											<span class="slider round"></span>
+										</label>
+									</td>
+								</tr>
+							</table>
+						</td>
+						<td>
+							<table class="table-input-top table-input-top2" cellspacing="0" cellpadding="0">
+								<colgroup>
+									<col style="width: 132px">
+									<col style="width: *">
+								</colgroup>
+								<tr class="no-top-line">
+									<td><i class="fas fa-power-off  fa-lg fa-fw"></i>&ensp;Daemon Status</td>
+									<td class="right-border1">
+										<input id="daemon_status" value="Not Started" disabled="true" style="width:calc(100% - 23px)" type="text"/>
+									</td>
+								</tr>
+							</table>
+						</td>
+						<td class="bottom-right-corner">
+							<table class="table-input-top table-input-top2" cellspacing="0" cellpadding="0">
+								<colgroup>
+									<col style="width: 125px">
+									<col style="width: *">
+								</colgroup>
+								<tr class="no-top-line">
+									<td><i class="fas fa-bolt fa-lg fa-fw"></i>&ensp;Mining IP</td>
+									<td class="right-border1">
+										<input id="local_ip" value="127.0.0.1" disabled="true" style="width:calc(100% - 12px)" type="text"/>
 									</td>
 								</tr>
 							</table>
@@ -142,7 +189,7 @@
 								<col style="width: *">
 							</colgroup>
 							<tr>
-								<td><i class="fas fa-route fa-lg fa-fw"></i>&ensp;Solutions</td>
+								<td><i class="fas fa-users  fa-lg fa-fw"></i>&ensp;Workers</td>
 							</tr>
 						</table>
 					</td>
@@ -152,7 +199,7 @@
 								<col style="width: *">
 							</colgroup>
 							<tr>
-								<td><i class="fas fa-cubes fa-lg fa-fw"></i>&ensp;Blocks Found</td>
+								<td><i class="fas fa-route fa-lg fa-fw"></i>&ensp;Solutions</td>
 							</tr>
 						</table>
 					</td>
@@ -187,7 +234,7 @@
 							</colgroup>
 							<tr>
 								<td class="data">
-									<input disabled="true" id="data_shares" style="width:100%" type="text" value="0"/>
+									<input disabled="true" value="0" id="data_conn" style="width:100%" type="text"/>
 								</td>
 							</tr>
 						</table>
@@ -199,7 +246,7 @@
 							</colgroup>
 							<tr>
 								<td class="data">
-									<input disabled="true" value="0" id="data_blocks" style="width:100%" type="text"/>
+									<input disabled="true" id="data_shares" style="width:100%" type="text" value="0"/>
 								</td>
 							</tr>
 						</table>
@@ -254,7 +301,7 @@
 								<col style="width: *">
 							</colgroup>
 							<tr>
-								<td><i class="fas fa-chart-line fa-lg fa-fw"></i>&ensp;Current Effort</td>
+								<td><i class="fas fa-clock fa-lg fa-fw"></i>&ensp;Uptime</td>
 							</tr>
 						</table>
 					</td>
@@ -303,7 +350,7 @@
 							</colgroup>
 							<tr>
 								<td class="data">
-									<input disabled="true" value="0.00%" id="data_currenteffort" style="width:100%" type="text"/>
+									<input disabled="true" value="00:00:00s" id="data_uptime" style="width:100%" type="text"/>
 								</td>
 							</tr>
 						</table>
@@ -316,7 +363,7 @@
 								<col style="width: *">
 							</colgroup>
 							<tr>
-								<td><i class="fas fa-users fa-lg fa-fw"></i>&ensp;Workers</td>
+								<td><i class="fas fa-coins fa-lg fa-fw"></i>&ensp;Total Earned</td>
 							</tr>
 						</table>
 					</td>
@@ -346,7 +393,7 @@
 								<col style="width: *">
 							</colgroup>
 							<tr>
-								<td><i class="fas fa-chart-line fa-lg fa-fw"></i>&ensp;Average Effort</td>
+								<td><i class="fas fa-chart-line fa-lg fa-fw"></i>&ensp;Current Effort</td>
 							</tr>
 						</table>
 					</td>
@@ -359,7 +406,7 @@
 							</colgroup>
 							<tr>
 								<td class="data data_left">
-									<input disabled="true" id="data_conn" style="width:100%" type="text" value="0"/>
+									<input disabled="true" id="data_total_earned" style="width:100%" type="text" value="0.00 TUBE"/>
 								</td>
 							</tr>
 						</table>
@@ -384,6 +431,99 @@
 							<tr>
 								<td class="data">
 									<input disabled="true" value="0.00 TUBE" id="data_reward" style="width:100%" type="text"/>
+								</td>
+							</tr>
+						</table>
+					</td>
+					<td>
+						<table style="padding-left:20px;margin-top:0px;width:100%;table-layout: fixed;border:0;" cellspacing="0" cellpadding="0">
+							<colgroup>
+								<col style="width: *">
+							</colgroup>
+							<tr>
+								<td class="data">
+									<input disabled="true" value="0.00%" id="data_currenteffort" style="width:100%" type="text"/>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<table class="table-header" cellspacing="0" cellpadding="0">
+							<colgroup>
+								<col style="width: *">
+							</colgroup>
+							<tr>
+								<td><i class="fas fa-cubes fa-lg fa-fw"></i>&ensp;Block Found</td>
+							</tr>
+						</table>
+					</td>
+					<td>
+						<table class="table-header table-header2" cellspacing="0" cellpadding="0">
+							<colgroup>
+								<col style="width: *">
+							</colgroup>
+							<tr>
+								<td><i class="fas fa-unlock-alt fa-lg fa-fw"></i>&ensp;Unlocked Blocks</td>
+							</tr>
+						</table>
+					</td>
+					<td>
+						<table class="table-header table-header2" cellspacing="0" cellpadding="0">
+							<colgroup>
+								<col style="width: *">
+							</colgroup>
+							<tr>
+								<td><i class="fas fa-times-circle fa-lg fa-fw"></i>&ensp;Orphan Blocks</td>
+							</tr>
+						</table>
+					</td>
+					<td>
+						<table class="table-header table-header2" cellspacing="0" cellpadding="0">
+							<colgroup>
+								<col style="width: *">
+							</colgroup>
+							<tr>
+								<td><i class="fas fa-chart-line fa-lg fa-fw"></i>&ensp;Average Effort</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<table style="padding-left:0px;margin-top:0px;width:100%;table-layout: fixed;border:0;" cellspacing="0" cellpadding="0">
+							<colgroup>
+								<col style="width: *">
+							</colgroup>
+							<tr>
+								<td class="data data_left">
+									<input disabled="true" id="data_blocks" style="width:100%" type="text" value="0"/>
+								</td>
+							</tr>
+						</table>
+					</td>
+					<td>
+						<table style="padding-left:20px;margin-top:0px;width:100%;table-layout: fixed;border:0;" cellspacing="0" cellpadding="0">
+							<colgroup>
+								<col style="width: *">
+							</colgroup>
+							<tr>
+								<td class="data">
+									<input disabled="true" value="0" id="data_blocks_unlocked" style="width:100%" type="text"/>
+
+								</td>
+							</tr>
+						</table>
+					</td>
+					<td>
+						<table style="padding-left:20px;margin-top:0px;width:100%;table-layout: fixed;border:0;" cellspacing="0" cellpadding="0">
+							<colgroup>
+								<col style="width: *">
+							</colgroup>
+							<tr>
+								<td class="data">
+									<input disabled="true" value="0" id="data_blocks_orphaned" style="width:100%" type="text"/>
 								</td>
 							</tr>
 						</table>
@@ -487,6 +627,20 @@
 			var currency = "TUBE";
 			var exchangeRate = 1;
 			var exchangePrefetch = true;
+			
+			function handle_embed(toggle) {
+				if (toggle.checked) {
+					document.getElementById('daemonhost').disabled = true;
+					document.getElementById('daemonhost').value = "Embedded";
+					//ipcRenderer.send('set', ['isEmbedded', true]);
+				}
+				else {
+					document.getElementById('daemonhost').disabled = false;
+					document.getElementById('daemonhost').value="127.0.0.1";
+					//ipcRenderer.send('set', ['isEmbedded', false]);
+				}
+				updateData();
+			}
 
 			function updateData() { 
 				if( (document.getElementById('daemonport').value < 1024)||(document.getElementById('daemonport').value > 65535))
@@ -542,7 +696,7 @@
 				document.getElementById('workers').innerHTML=arg;
 			})
 			ipcRenderer.on('blocks', (event, arg) => {
-                document.getElementById('blocks').innerHTML=arg;
+				document.getElementById('blocks').innerHTML=arg;
 				//blockslines.unshift(d.toISOString().substr(0, 19)+'&emsp;'+msg[0]+'<span id=blocks_hash><a href="https://explorer.bittube.app/block/'+msg[1]+'" target="_blank">'+msg[1]+'</a>+&emsp;'+msg[2]);
 				//if (blockslines.length > 100) blockslines.pop();
 				//document.getElementById('blocks').innerHTML=blockslines.join('<br/>');
