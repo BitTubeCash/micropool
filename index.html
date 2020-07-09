@@ -73,6 +73,53 @@
 									<col style="width: *">
 								</colgroup>
 								<tr class="no-top-line">
+									<td><i class="fas fa-desktop fa-lg fa-fw"></i>&ensp;Embedded Daemon</td>
+									<td>
+										<label class="switch">
+											<input type="checkbox" id="switch_embed" onclick="handle_embed(this)">
+											<span class="slider round"></span>
+										</label>
+									</td>
+								</tr>
+							</table>
+						</td>
+						<td>
+							<table class="table-input-top table-input-top2" cellspacing="0" cellpadding="0">
+								<colgroup>
+									<col style="width: 132px">
+									<col style="width: *">
+								</colgroup>
+								<tr class="no-top-line">
+									<td><i class="fas fa-power-off  fa-lg fa-fw"></i>&ensp;Daemon Status</td>
+									<td class="right-border1">
+										<input id="daemon_status" value="Not Started" disabled="true" style="width:calc(100% - 23px)" type="text"/>
+									</td>
+								</tr>
+							</table>
+						</td>
+						<td>
+							<table class="table-input-top table-input-top2" cellspacing="0" cellpadding="0">
+								<colgroup>
+									<col style="width: 125px">
+									<col style="width: *">
+								</colgroup>
+								<tr class="no-top-line">
+									<td><i class="fas fa-bolt fa-lg fa-fw"></i>&ensp;Mining IP</td>
+									<td class="right-border1">
+										<input id="local_ip" value="127.0.0.1" disabled="true" style="width:calc(100% - 12px)" type="text"/>
+									</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+					<tr class="dashboard">
+						<td class="bottom-left-corner">
+							<table class="table-input-top" cellspacing="0" cellpadding="0">
+								<colgroup>
+									<col style="width: 160px">
+									<col style="width: *">
+								</colgroup>
+								<tr class="no-top-line">
 									<td><i class="fas fa-server fa-lg fa-fw"></i>&ensp;Daemon Host</td>
 									<td>
 										<input id="daemonhost" value=""style="width:100%" onchange="updateData()" type="text"/>
@@ -101,7 +148,7 @@
 								</tr>
 							</table>
 						</td>
-						<td>
+						<td class="bottom-right-corner">
 							<table class="table-input-top table-input-top2" cellspacing="0" cellpadding="0">
 								<colgroup>
 									<col style="width: 125px">
@@ -111,53 +158,6 @@
 									<td><i class="fas fa-plug fa-lg fa-fw"></i>&ensp;Mining Port</td>
 									<td class="right-border1">
 										<input id="poolport" value="" onchange="updateData()" style="width:calc(100% - 12px)" type="text"/>
-									</td>
-								</tr>
-							</table>
-						</td>
-					</tr>
-					<tr class="dashboard">
-						<td class="bottom-left-corner">
-							<table class="table-input-top" cellspacing="0" cellpadding="0">
-								<colgroup>
-									<col style="width: 160px">
-									<col style="width: *">
-								</colgroup>
-								<tr class="no-top-line">
-									<td><i class="fas fa-desktop fa-lg fa-fw"></i>&ensp;Embedded Daemon</td>
-									<td>
-										<label class="switch">
-											<input type="checkbox" id="switch_embed" onclick="handle_embed(this)">
-											<span class="slider round"></span>
-										</label>
-									</td>
-								</tr>
-							</table>
-						</td>
-						<td>
-							<table class="table-input-top table-input-top2" cellspacing="0" cellpadding="0">
-								<colgroup>
-									<col style="width: 132px">
-									<col style="width: *">
-								</colgroup>
-								<tr class="no-top-line">
-									<td><i class="fas fa-power-off  fa-lg fa-fw"></i>&ensp;Daemon Status</td>
-									<td class="right-border1">
-										<input id="daemon_status" value="Not Started" disabled="true" style="width:calc(100% - 23px)" type="text"/>
-									</td>
-								</tr>
-							</table>
-						</td>
-						<td class="bottom-right-corner">
-							<table class="table-input-top table-input-top2" cellspacing="0" cellpadding="0">
-								<colgroup>
-									<col style="width: 125px">
-									<col style="width: *">
-								</colgroup>
-								<tr class="no-top-line">
-									<td><i class="fas fa-bolt fa-lg fa-fw"></i>&ensp;Mining IP</td>
-									<td class="right-border1">
-										<input id="local_ip" value="127.0.0.1" disabled="true" style="width:calc(100% - 12px)" type="text"/>
 									</td>
 								</tr>
 							</table>
