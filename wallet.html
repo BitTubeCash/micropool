@@ -172,6 +172,7 @@ function use_address() {
 	const { ipcRenderer } = require('electron');
 	ipcRenderer.send('set', ['mining_address',document.getElementById('address_widget').innerHTML]);
 	ipcRenderer.send('run', ['updateWallet']);
+	alert("Address has been assigned for mining.\nPlease be sure to write down your mnemonic seed before closing this page.");
 }
 
 var JSBigInt = (function () {
