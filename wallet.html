@@ -110,8 +110,21 @@
 			
 			<h4 class="push-up-15"><span tkey="walletAddress">Wallet Address:<span></h4>
 			<div class="card padding-15 padding-b-10">
-				<code><span id="address_widget">generating...</span></code>
-				<span class="qrcode" id="address_qr_widget" onclick="js:toggle_qr();"></span>
+				<table>
+					<colgroup>
+						<col span="1" style="width: 100%">
+						<col span="1" style="width: *">
+					</colgroup>
+					<td style="word-break:break-all;">
+						<code><span id="address_widget">generating...</span></code>
+						<span class="qrcode" id="address_qr_widget" onclick="js:toggle_qr();"></span><br>
+					</td>
+					<td>
+						<button class="btn btn-default" type="button" onclick="use_address()">
+							<span><i class="fa fa-wallet"></i>&nbsp; <span tkey="set">Use This Address</span></span>
+						</button>
+					</td>
+				</table>
 			</div>
 			
 			<h4 class="push-up-15"><span tkey="privateSpendKey">Private Spend Key:<span></h4>
@@ -130,13 +143,23 @@
 			</div>
 
 			<h4 class="push-up-15"><span tkey="generateWallet">Generate New Wallet:<span></h4>
-			<div class="card padding-15 padding-b-10">
-				<div>Enter a random string for custom entropy (leave empty to use the browser's PRNG)</div><br>
-				<input class="form-control" type="text" value="" id="user_entropy_widget" oninput="js:checkEntropy();" /><br>
-				<button class="btn btn-default" type="button" onclick="js:genwallet(null);">
-					<span><i class="fa fa-history"></i>&nbsp; <span tkey="set">New Wallet</span></span>
-				</button>
-				<div style="color: #ffbfc5; display: none" id="user_entropy_warning_widget">WARNING: entropy is way too low for the wallet to be secure: aim for 256 bits (about a hundred dice throws)</div>
+			<div class="card card-info padding-15 padding-b-10">
+				Enter a random string for custom entropy (leave empty to use the browser's PRNG)<br>
+				<table>
+					<colgroup>
+						<col span="1" style="width: 100%">
+						<col span="1" style="width: *">
+					</colgroup>
+					<td>
+						<input class="form-control" type="text" value="" id="user_entropy_widget" oninput="js:checkEntropy();" />
+					</td>
+					<td>
+						<button class="btn btn-default" type="button" onclick="js:genwallet(null);">
+							<span><i class="fa fa-history"></i>&nbsp; <span tkey="set">New Wallet</span></span>
+						</button>
+					</td>
+				</table>
+				<div style="margin-top: 10px; color: #ffbfc5; display: none;" id="user_entropy_warning_widget">WARNING: entropy is way too low for the wallet to be secure: aim for 256 bits (about a hundred dice throws)</div>
 			</div>
 		</div>
 	<body>
@@ -144,6 +167,14 @@
 		
 <!-- Javascript -->
 <script>
+function use_address() {
+	var electron = require('electron');
+	const { ipcRenderer } = require('electron');
+	ipcRenderer.send('set', ['mining_address',document.getElementById('address_widget').innerHTML]);
+	ipcRenderer.send('run', ['updateWallet']);
+	alert("Address has been assigned for mining.\nPlease be sure to write down your mnemonic seed before closing this page.");
+}
+
 var JSBigInt = (function () {
 	"use strict";
 	/*

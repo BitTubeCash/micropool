@@ -115,8 +115,7 @@ var blockstxt         = "";
 var jobshares         = 0;
 var totalEffort       = 0;
 
-function resetData()
-{
+function resetData() {
 	shares=0;
 	blocks=0;
 	jobshares=0;
@@ -125,6 +124,10 @@ function resetData()
 	mainWindow.webContents.send('get-reply', ['data_blocks', 0]);
 	mainWindow.webContents.send('get-reply', ['data_currenteffort', "0.00%"]);
 	mainWindow.webContents.send('get-reply', ['data_averageeffort', "0.00%"]);
+}
+
+function updateWallet() {
+	mainWindow.webContents.send('get-reply', ['mining_address', global.poolconfig.mining_address]);
 }
 
 function nonceCheck(miner,nonce) {
@@ -455,6 +458,7 @@ function createWindow () {
 
 	ipcMain.on('run',(event,arg) => {
 		if(arg[0] === "resetData") resetData();
+		if(arg[0] === "updateWallet") updateWallet();
 	});
 	
 	var started=0
