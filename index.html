@@ -52,7 +52,7 @@
 						<td colspan="3">
 							<table class="table-input-top" cellspacing="0" cellpadding="0">
 								<colgroup>
-									<col style="width: 160px">
+									<col style="width: 135px">
 									<col style="width: *">
 								</colgroup>
 								<tr>
@@ -69,16 +69,20 @@
 						<td>
 							<table class="table-input-top" cellspacing="0" cellpadding="0">
 								<colgroup>
-									<col style="width: 160px">
+									<col style="width: 135px">
+									<col style="width: 50px">
 									<col style="width: *">
 								</colgroup>
 								<tr class="no-top-line">
-									<td><i class="fas fa-desktop fa-lg fa-fw"></i>&ensp;Embedded Daemon</td>
+									<td><i class="fas fa-desktop fa-lg fa-fw"></i>&ensp;Daemon</td>
 									<td>
 										<label class="switch">
 											<input type="checkbox" id="switch_embed" onclick="handle_embed(this)">
 											<span class="slider round"></span>
 										</label>
+									</td>
+									<td>
+										<input id="daemon_status" disabled="true" style="width:100%" type="text"/>
 									</td>
 								</tr>
 							</table>
@@ -87,12 +91,19 @@
 							<table class="table-input-top table-input-top2" cellspacing="0" cellpadding="0">
 								<colgroup>
 									<col style="width: 132px">
+									<col style="width: 50px">
 									<col style="width: *">
 								</colgroup>
 								<tr class="no-top-line">
-									<td><i class="fas fa-power-off  fa-lg fa-fw"></i>&ensp;Daemon Status</td>
-									<td class="right-border1">
-										<input id="daemon_status" value="Not Started" disabled="true" style="width:calc(100% - 23px)" type="text"/>
+									<td><i class="fas fa-hammer  fa-lg fa-fw"></i>&ensp;Miner</td>
+									<td>
+										<label class="switch">
+											<input type="checkbox" id="switch_miner" onclick="handle_miner(this)">
+											<span class="slider round"></span>
+										</label>
+									</td>
+									<td>
+										<input id="miner_status" disabled="true" style="width:100%" type="text"/>
 									</td>
 								</tr>
 							</table>
@@ -116,7 +127,7 @@
 						<td class="bottom-left-corner">
 							<table class="table-input-top" cellspacing="0" cellpadding="0">
 								<colgroup>
-									<col style="width: 160px">
+									<col style="width: 135px">
 									<col style="width: *">
 								</colgroup>
 								<tr class="no-top-line">
@@ -631,13 +642,23 @@
 			function handle_embed(toggle) {
 				if (toggle.checked) {
 					document.getElementById('daemonhost').disabled = true;
-					document.getElementById('daemonhost').value = "Embedded";
+					//document.getElementById('daemonhost').value = "Embedded";
 					//ipcRenderer.send('set', ['isEmbedded', true]);
 				}
 				else {
 					document.getElementById('daemonhost').disabled = false;
-					document.getElementById('daemonhost').value="127.0.0.1";
+					//document.getElementById('daemonhost').value="127.0.0.1";
 					//ipcRenderer.send('set', ['isEmbedded', false]);
+				}
+				updateData();
+			}
+			
+			function handle_miner(toggle) {
+				if (toggle.checked) {
+					//ipcRenderer.send('set', ['isEmbeddedMiner', true]);
+				}
+				else {
+					//ipcRenderer.send('set', ['isEmbeddedMiner', false]);
 				}
 				updateData();
 			}

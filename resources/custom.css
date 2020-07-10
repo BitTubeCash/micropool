@@ -378,7 +378,7 @@ div#help a
 	font-size: 12px;
 	border: none;
 	cursor: pointer;
-	width: 140px;
+	width: 163px;
 }
 .dropbtn:before {
 	content: "";
@@ -410,7 +410,7 @@ div#help a
 	display: none;
 	position: absolute;
 	background-color: #121212;
-	min-width: 140px;
+	min-width: 163px;
 	box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
 	z-index: 1;
 }
