@@ -12,6 +12,7 @@
 				tablinks = document.getElementsByClassName("tablinks");
 				tablinks[0].className += " active";
 				pullExchangeRate();
+				document.getElementById("log").style.height='calc(100% - 25px)';
 			}
 			function openTab(evt, cityName) {
 				var i, tabcontent, tablinks;
@@ -77,7 +78,7 @@
 									<td><i class="fas fa-desktop fa-lg fa-fw"></i>&ensp;Daemon</td>
 									<td>
 										<label class="switch">
-											<input type="checkbox" id="switch_embed" onclick="handle_embed(this)">
+											<input type="checkbox" id="switch_embed" onclick="handle_embed(this)" checked>
 											<span class="slider round"></span>
 										</label>
 									</td>
@@ -98,7 +99,7 @@
 									<td><i class="fas fa-hammer  fa-lg fa-fw"></i>&ensp;Miner</td>
 									<td>
 										<label class="switch">
-											<input type="checkbox" id="switch_miner" onclick="handle_miner(this)">
+											<input type="checkbox" id="switch_miner" onclick="handle_miner(this)" checked>
 											<span class="slider round"></span>
 										</label>
 									</td>
@@ -564,6 +565,7 @@
 			<div id="tablog" class="tabcontent">
 				<div id="log">
 				</div>
+				<input id="daemon_command_input" placeholder=">Enter daemon command" onkeydown="handle_daemon_command(this)" type="text"/>
 			</div>
 
 			<div id="tabworker" class="tabcontent">
@@ -628,7 +630,6 @@
 					<input id="ctrlport" value="" type="hidden"/>
 				</div>
 			</div>
-
 		</div>
 		<script src="konami.js"></script>
 		<script>
@@ -639,14 +640,27 @@
 			var exchangeRate = 1;
 			var exchangePrefetch = true;
 			
+			function handle_daemon_command(input) {
+				if(event.key === 'Enter') {
+					ipcRenderer.send('run', ['runDaemonCommand',  input.value]);
+					input.value = "";
+				}
+			}
+			
 			function handle_embed(toggle) {
 				if (toggle.checked) {
 					document.getElementById('daemonhost').disabled = true;
+					document.getElementById("daemon_command_input").style.display="block";
+					document.getElementById("log").style.height='calc(100% - 25px)';
+					
 					//document.getElementById('daemonhost').value = "Embedded";
 					//ipcRenderer.send('set', ['isEmbedded', true]);
 				}
 				else {
 					document.getElementById('daemonhost').disabled = false;
+					document.getElementById("daemon_command_input").style.display="none";
+					document.getElementById("log").style.height='100%';
+
 					//document.getElementById('daemonhost').value="127.0.0.1";
 					//ipcRenderer.send('set', ['isEmbedded', false]);
 				}
