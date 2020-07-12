@@ -46,7 +46,12 @@
 							<div class="logo"><img src="resources/logo/bittube_logo.png" alt="Bittube Micropool" style="height:30px;"></div>
 						</th>
 						<th colspan="2">
-							<div class="toplinks"><a href="https://bittube.cash/" target="_blank">Website</a><a href="https://github.com/BitTubeCash" target="_blank">Github</a><a href="https://explorer.bit.tube" target="_blank">Explorer</a><a href="wallet.html" target="_blank">Paper Wallet</a></div>
+							<div class="toplinks">
+								<a onclick="openExternal('https://bittube.cash');">Website</a>
+								<a onclick="openExternal('https://github.com/BitTubeCash');">Github</a>
+								<a onclick="openExternal('https://explorer.bit.tube')";>Explorer</a>
+								<a href="wallet.html" target="_blank">Paper Wallet</a>
+							</div>
 						</th>
 					</tr>
 					<tr class="dashboard">
@@ -634,12 +639,17 @@
 		<script src="konami.js"></script>
 		<script>
 			var electron = require('electron');
+			var open = require("open");
 			var loglines = [];
 			var blockslines = [];
 			var currency = "TUBE";
 			var exchangeRate = 1;
 			var exchangePrefetch = true;
 			
+			function openExternal(link) {
+				open(link);
+			}
+
 			function handle_daemon_command(input) {
 				if(event.key === 'Enter') {
 					ipcRenderer.send('run', ['runDaemonCommand',  input.value]);
