@@ -245,6 +245,13 @@ div#help a
 {
 	color:#eeeeee;
 }
+input#daemon_command_input {
+	height: 15px;
+	width: calc(100% - 10px);
+	background-color: #00000050;
+	border-radius: 0;
+	text-indent: 15px;
+}
 .data_gps input {
 	font-family: "Roboto-Thin";
 	background-color: transparent;
@@ -358,6 +365,7 @@ div#help a
 	text-align: right;
 	padding-right: 20px;
 	vertical-align: top;
+	cursor: pointer;
 }
 .toplinks a {
 	font-family: "Roboto-Thin";

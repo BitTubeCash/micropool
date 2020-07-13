@@ -130,6 +130,10 @@ function updateWallet() {
 	mainWindow.webContents.send('get-reply', ['mining_address', global.poolconfig.mining_address]);
 }
 
+function runDaemonCommand(command) {
+	logger.debug("Recieved Daemon Command: " + command);
+}
+
 function nonceCheck(miner,nonce) {
 
 	if (miner.nonces.indexOf(nonce) !== -1) return false;
@@ -459,6 +463,7 @@ function createWindow () {
 	ipcMain.on('run',(event,arg) => {
 		if(arg[0] === "resetData") resetData();
 		if(arg[0] === "updateWallet") updateWallet();
+		if(arg[0] === "runDaemonCommand") runDaemonCommand(arg[1]);
 	});
 	
 	var started=0

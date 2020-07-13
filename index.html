@@ -12,6 +12,7 @@
 				tablinks = document.getElementsByClassName("tablinks");
 				tablinks[0].className += " active";
 				pullExchangeRate();
+				document.getElementById("log").style.height='calc(100% - 25px)';
 			}
 			function openTab(evt, cityName) {
 				var i, tabcontent, tablinks;
@@ -45,7 +46,12 @@
 							<div class="logo"><img src="resources/logo/bittube_logo.png" alt="Bittube Micropool" style="height:30px;"></div>
 						</th>
 						<th colspan="2">
-							<div class="toplinks"><a href="https://bittube.cash/" target="_blank">Website</a><a href="https://github.com/BitTubeCash" target="_blank">Github</a><a href="https://explorer.bit.tube" target="_blank">Explorer</a><a href="wallet.html" target="_blank">Paper Wallet</a></div>
+							<div class="toplinks">
+								<a onclick="openExternal('https://bittube.cash');">Website</a>
+								<a onclick="openExternal('https://github.com/BitTubeCash');">Github</a>
+								<a onclick="openExternal('https://explorer.bit.tube')";>Explorer</a>
+								<a href="wallet.html" target="_blank">Paper Wallet</a>
+							</div>
 						</th>
 					</tr>
 					<tr class="dashboard">
@@ -77,7 +83,7 @@
 									<td><i class="fas fa-desktop fa-lg fa-fw"></i>&ensp;Daemon</td>
 									<td>
 										<label class="switch">
-											<input type="checkbox" id="switch_embed" onclick="handle_embed(this)">
+											<input type="checkbox" id="switch_embed" onclick="handle_embed(this)" checked>
 											<span class="slider round"></span>
 										</label>
 									</td>
@@ -98,7 +104,7 @@
 									<td><i class="fas fa-hammer  fa-lg fa-fw"></i>&ensp;Miner</td>
 									<td>
 										<label class="switch">
-											<input type="checkbox" id="switch_miner" onclick="handle_miner(this)">
+											<input type="checkbox" id="switch_miner" onclick="handle_miner(this)" checked>
 											<span class="slider round"></span>
 										</label>
 									</td>
@@ -564,6 +570,7 @@
 			<div id="tablog" class="tabcontent">
 				<div id="log">
 				</div>
+				<input id="daemon_command_input" placeholder="Daemon CLI>" onkeydown="handle_daemon_command(this)" type="text"/>
 			</div>
 
 			<div id="tabworker" class="tabcontent">
@@ -628,25 +635,42 @@
 					<input id="ctrlport" value="" type="hidden"/>
 				</div>
 			</div>
-
 		</div>
 		<script src="konami.js"></script>
 		<script>
 			var electron = require('electron');
+			var open = require("open");
 			var loglines = [];
 			var blockslines = [];
 			var currency = "TUBE";
 			var exchangeRate = 1;
 			var exchangePrefetch = true;
 			
+			function openExternal(link) {
+				open(link);
+			}
+
+			function handle_daemon_command(input) {
+				if(event.key === 'Enter') {
+					ipcRenderer.send('run', ['runDaemonCommand',  input.value]);
+					input.value = "";
+				}
+			}
+			
 			function handle_embed(toggle) {
 				if (toggle.checked) {
 					document.getElementById('daemonhost').disabled = true;
+					document.getElementById("daemon_command_input").style.display="block";
+					document.getElementById("log").style.height='calc(100% - 25px)';
+					
 					//document.getElementById('daemonhost').value = "Embedded";
 					//ipcRenderer.send('set', ['isEmbedded', true]);
 				}
 				else {
 					document.getElementById('daemonhost').disabled = false;
+					document.getElementById("daemon_command_input").style.display="none";
+					document.getElementById("log").style.height='100%';
+
 					//document.getElementById('daemonhost').value="127.0.0.1";
 					//ipcRenderer.send('set', ['isEmbedded', false]);
 				}
