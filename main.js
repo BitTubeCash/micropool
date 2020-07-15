@@ -9,9 +9,6 @@ var ifaces = os.networkInterfaces();
 var c29b = require('./c29b_nowasm.js');
 var verify_c29b = c29b.cwrap('c29b_verify', 'number', ['array','number','array']);
 var check_diff = c29b.cwrap('check_diff', 'number', ['number','array']);
-var shares=0;
-var blocks=0;
-var conn=0;
 
 var emb_miner_status = 0;
 var emb_daemon_status = 0;
@@ -29,6 +26,7 @@ global.poolconfig = {
 const http = require('http');
 const https = require('https');
 const net = require("net");
+
 
 function seq(){
 	var min = 1000000000;
@@ -126,17 +124,69 @@ var jobcounter        = 0;
 var blockstxt         = "";
 var jobshares         = 0;
 var totalEffort       = 0;
+var shares=0;
+var blocks=0;
+var blocks_unlocked=0;
+var blocks_orphaned=0;
+var unlocked_coins=0;
+var conn=0;
+var locked_blocks = [];
 
 function resetData() {
 	shares=0;
 	blocks=0;
 	jobshares=0;
 	totalEffort=0;
+	blocks_unlocked=0;
+	blocks_orphaned=0;
+	unlocked_coins=0;
+	locked_blocks=[];
 	mainWindow.webContents.send('get-reply', ['data_shares', 0]);
 	mainWindow.webContents.send('get-reply', ['data_blocks', 0]);
 	mainWindow.webContents.send('get-reply', ['data_currenteffort', "0.00%"]);
 	mainWindow.webContents.send('get-reply', ['data_averageeffort', "0.00%"]);
 }
+
+function check_block(block) {
+
+	rpc('getblock', {height: block[1]}, function(error,result){
+
+		if(block[0] == result.block_header.hash){
+			blocks_unlocked++;
+			unlocked_coins+=result.block_header.reward;
+		}
+		else{
+			blocks_orphaned++;
+		}
+		mainWindow.webContents.send('get-reply', ['data_blocks_unlocked',blocks_unlocked]);
+		mainWindow.webContents.send('get-reply', ['data_blocks_orphaned',blocks_orphaned]);
+		mainWindow.webContents.send('get-reply', ['data_total_earned',((unlocked_coins/1000000000).toFixed(2))+' TUBE']);
+	
+	});
+}
+
+function unlocker(){
+
+	var blocks=[];
+
+	for(var block of locked_blocks){
+
+		if(block[1]+60 < current_height)
+		{
+			check_block(block);
+		}
+		else
+		{
+			blocks.unshift(block);
+		}
+	}
+
+	locked_blocks=blocks;
+
+
+}
+
+setInterval(unlocker, 5000);
 
 function updateWallet() {
 	mainWindow.webContents.send('set', 'mining_address', global.poolconfig.mining_address);
@@ -289,7 +339,8 @@ Miner.prototype.nextnonce = function () {
 	
 	return this.jobnonce;
 }
-	
+
+
 function handleClient(data,miner){
 	
 	logger.debug("m->p "+data);
@@ -375,6 +426,7 @@ function handleClient(data,miner){
 
 			rpc('submitblock', [block.toString('hex')], function(error, result){
 				logger.info('BLOCK ('+miner.login+')');
+				locked_blocks.unshift([result.hash,block_found_height,(jobshares/current_target*100).toFixed(2)+'%']);
 				updateJob('found block');
 				blocks++;
 				mainWindow.webContents.send('get-reply', ['data_blocks',blocks]);
