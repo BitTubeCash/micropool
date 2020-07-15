@@ -6,6 +6,7 @@
 		<link rel="stylesheet" href="resources/css/fa.css">
 		<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';">
 		<script>
+			const { ipcRenderer } = require('electron');
 			function init()
 			{
 				openTab(event,'tablog');
@@ -686,31 +687,6 @@
 				}
 			}
 
-			function updateData() { 
-				if( (document.getElementById('daemonport').value < 1024)||(document.getElementById('daemonport').value > 65535))
-					document.getElementById('daemonport').value=25182;
-				if( (document.getElementById('poolport').value < 1024)||(document.getElementById('poolport').value > 65535))
-					document.getElementById('poolport').value=25650;
-				if( (document.getElementById('ctrlport').value < 1024)||(document.getElementById('ctrlport').value > 65535))
-					document.getElementById('ctrlport').value=25651;
-				
-				ipcRenderer.send('set', ['daemonport',parseFloat(document.getElementById('daemonport').value)|0]);
-				ipcRenderer.send('set', ['poolport',parseFloat(document.getElementById('poolport').value)|0]);
-				ipcRenderer.send('set', ['ctrlport',document.getElementById('ctrlport').value]);
-				ipcRenderer.send('set', ['daemonhost',document.getElementById('daemonhost').value]);
-				ipcRenderer.send('set', ['mining_address',document.getElementById('mining_address').value]);
-				
-				if (document.getElementById('daemonport').value == 25182)
-					document.getElementById('dropdowntopselection').textContent="Mainnet";
-				else if (document.getElementById('daemonport').value == 25282)
-					document.getElementById('dropdowntopselection').textContent="Testnet";
-				else if (document.getElementById('daemonport').value == 25382)
-					document.getElementById('dropdowntopselection').textContent="Stagenet";
-				else
-					document.getElementById('dropdowntopselection').textContent="Unknown";
-
-			}
-			const { ipcRenderer } = require('electron');
 			
 			ipcRenderer.on('get-reply', (event, arg) => {
 

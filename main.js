@@ -139,7 +139,7 @@ function resetData() {
 }
 
 function updateWallet() {
-	mainWindow.webContents.send('get-reply', ['mining_address', global.poolconfig.mining_address]);
+	mainWindow.webContents.send('set', 'mining_address', global.poolconfig.mining_address);
 }
 
 
@@ -505,8 +505,8 @@ function createWindow () {
 	mainWindow.loadFile('index.html');
 
 	ipcMain.on('run',(event,arg) => {
-		//if(arg[0] === "resetData") resetData();
-		//if(arg[0] === "updateWallet") updateWallet();
+		if(arg[0] === "resetData") resetData();
+		if(arg[0] === "updateWallet") updateWallet();
 		if(arg[0] === "runDaemonCommand") runDaemonCommand(arg[1]);
 	});
 
@@ -521,10 +521,8 @@ function createWindow () {
 						if(!error) global.poolconfig.mining_address = object;
 						loadstorage('emb_miner',function(error,object) {
 							if(!error) global.poolconfig.emb_miner = object;
-							console.log(object);
 							loadstorage('emb_daemon',function(error,object) {
 								if(!error) global.poolconfig.emb_daemon = object;
-								console.log(object);
 								loadstorage('daemonhost',function(error,object) {
 									if(!error) global.poolconfig.daemonhost = object;
 									
@@ -711,9 +709,6 @@ function createWindow () {
 		}
 
 		storage.set(arg[0],arg[1]);
-	
-		console.log(arg[0]);
-		console.log(arg[1]);
 
 		//Alternative init since this ipcMain.on('set',...) codeblock runs after ipcMain.on('get',...) on a clean startup.
 		//therefore, no config in storage for the original init to work with on clean startup.
