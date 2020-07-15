@@ -486,6 +486,65 @@ function runDaemonCommand(command) {
 	if(daemon_child)daemon_child.stdin.write(command+"\n");
 }
 
+function start_daemon() {
+
+	var appRootDir = require('app-root-dir').get();
+	var daemonpath;
+	if(isDev){
+		daemonpath = appRootDir + '\\resources\\win\\bittubecashd.exe';
+	}else{
+		appRootDir = path.dirname(appRootDir);
+		daemonpath = appRootDir + '\\bin\\bittubecashd.exe';
+	}
+	const spawn = require( 'child_process' ).spawn;
+	if(global.poolconfig.daemonport == 25282){
+		daemon_child = spawn( daemonpath, ['--no-zmq','--testnet']);  //add whatever switches you need here, test on command line first
+	}
+	else if(global.poolconfig.daemonport == 25382){
+		daemon_child = spawn( daemonpath, ['--no-zmq','--stagenet']);  //add whatever switches you need here, test on command line first
+	}
+	else {
+		daemon_child = spawn( daemonpath, ['--no-zmq']);  //add whatever switches you need here, test on command line first
+	}
+	var initial = 1;
+	var buffer = '';
+	daemon_child.stdout.on( 'data', data => {
+		if(initial) {
+			buffer+=data;
+		}else{
+			data = data.toString().replace(/^\s+|\s+$/g, '');
+			mainWindow.webContents.send('log_daemon', buffer+data);
+			buffer='';
+		}
+		if(buffer.includes('core RPC server started')) initial = 0;
+	});
+	daemon_child.stderr.on( 'data', data => {
+		logger.error( data );
+	});
+}
+function start_miner() {
+	
+	var appRootDir = require('app-root-dir').get();
+	var minerpath;
+	if(isDev){
+		minerpath = appRootDir + '\\resources\\win\\miner.exe';
+	}else{
+		appRootDir = path.dirname(appRootDir);
+		minerpath = appRootDir + '\\bin\\miner.exe';
+	}
+	const spawn = require( 'child_process' ).spawn;
+	miner_child = spawn( minerpath, ['-w','0','--algo','cuckaroo29b','--server','127.0.0.1:'+global.poolconfig.poolport,'--user','emb']);  //add whatever switches you need here, test on command line first
+	miner_child.stdout.on( 'data', data => {
+		data = data.toString().replace(/^\s+|\s+$/g, '');
+		mainWindow.webContents.send('log_daemon', data);
+	});
+	miner_child.stderr.on( 'data', data => {
+		logger.error( data );
+	});
+
+}
+
+
 function createWindow () {
 	// Create the browser window.
 	mainWindow = new BrowserWindow({
@@ -557,54 +616,11 @@ function createWindow () {
 									}
 									
 									if(global.poolconfig.emb_daemon == 1) {
-
-										var appRootDir = require('app-root-dir').get();
-										var daemonpath;
-										if(isDev){
-											daemonpath = appRootDir + '\\resources\\win\\bittubecashd.exe';
-										}else{
-											appRootDir = path.dirname(appRootDir);
-											daemonpath = appRootDir + '\\bin\\bittubecashd.exe';
-										}
-										const spawn = require( 'child_process' ).spawn;
-										if(global.poolconfig.daemonport == 25282){
-											daemon_child = spawn( daemonpath, ['--no-zmq','--testnet']);  //add whatever switches you need here, test on command line first
-										}
-										else if(global.poolconfig.daemonport == 25382){
-											daemon_child = spawn( daemonpath, ['--no-zmq','--stagenet']);  //add whatever switches you need here, test on command line first
-										}
-										else {
-											daemon_child = spawn( daemonpath, ['--no-zmq']);  //add whatever switches you need here, test on command line first
-										}
-										daemon_child.stdout.on( 'data', data => {
-											data = data.toString().replace(/^\s+|\s+$/g, '');
-											mainWindow.webContents.send('log_daemon', data);
-										});
-										daemon_child.stderr.on( 'data', data => {
-											logger.error( data );
-										});
-
+										start_daemon();
 									}
 									
 									if(global.poolconfig.emb_miner == 1) {
-
-										var appRootDir = require('app-root-dir').get();
-										var minerpath;
-										if(isDev){
-											minerpath = appRootDir + '\\resources\\win\\miner.exe';
-										}else{
-											appRootDir = path.dirname(appRootDir);
-											minerpath = appRootDir + '\\bin\\miner.exe';
-										}
-										const spawn = require( 'child_process' ).spawn;
-										miner_child = spawn( minerpath, ['-w','0','--algo','cuckaroo29b','--server','127.0.0.1:'+global.poolconfig.poolport,'--user','emb']);  //add whatever switches you need here, test on command line first
-										miner_child.stdout.on( 'data', data => {
-											data = data.toString().replace(/^\s+|\s+$/g, '');
-											mainWindow.webContents.send('log_daemon', data);
-										});
-										miner_child.stderr.on( 'data', data => {
-											logger.error( data );
-										});
+										start_miner();
 									}
 									
 									setInterval(function(){updateJob('timer');}, 100);
@@ -639,31 +655,7 @@ function createWindow () {
 			if(arg[1] != global.poolconfig.emb_daemon) {
 				global.poolconfig.emb_daemon=arg[1];
 				if(global.poolconfig.emb_daemon == 1) {
-					var appRootDir = require('app-root-dir').get();
-					var daemonpath;
-					if(isDev){
-						daemonpath = appRootDir + '\\resources\\win\\bittubecashd.exe';
-					}else{
-						appRootDir = path.dirname(appRootDir);
-						daemonpath = appRootDir + '\\bin\\bittubecashd.exe';
-					}
-					const spawn = require( 'child_process' ).spawn;
-					if(global.poolconfig.daemonport == 25282){
-						daemon_child = spawn( daemonpath, ['--no-zmq','--testnet']);  //add whatever switches you need here, test on command line first
-					}
-					else if(global.poolconfig.daemonport == 25382){
-						daemon_child = spawn( daemonpath, ['--no-zmq','--stagenet']);  //add whatever switches you need here, test on command line first
-					}
-					else {
-						daemon_child = spawn( daemonpath, ['--no-zmq']);  //add whatever switches you need here, test on command line first
-					}
-					daemon_child.stdout.on( 'data', data => {
-						data = data.toString().replace(/^\s+|\s+$/g, '');
-						mainWindow.webContents.send('log_daemon', data);
-					});
-					daemon_child.stderr.on( 'data', data => {
-						logger.error( data );
-					});
+					start_daemon();
 				
 				}else{
 					if(daemon_child)daemon_child.kill();
@@ -674,24 +666,7 @@ function createWindow () {
 			if(arg[1] != global.poolconfig.emb_miner) {
 				global.poolconfig.emb_miner=arg[1];
 				if(global.poolconfig.emb_miner == 1) {
-					
-					var appRootDir = require('app-root-dir').get();
-					var minerpath;
-					if(isDev){
-						minerpath = appRootDir + '\\resources\\win\\miner.exe';
-					}else{
-						appRootDir = path.dirname(appRootDir);
-						minerpath = appRootDir + '\\bin\\miner.exe';
-					}
-					const spawn = require( 'child_process' ).spawn;
-					miner_child = spawn( minerpath, ['-w','0','--algo','cuckaroo29b','--server','127.0.0.1:'+global.poolconfig.poolport,'--user','emb']);  //add whatever switches you need here, test on command line first
-					miner_child.stdout.on( 'data', data => {
-						data = data.toString().replace(/^\s+|\s+$/g, '');
-						mainWindow.webContents.send('log_daemon', data);
-					});
-					miner_child.stderr.on( 'data', data => {
-						logger.error( data );
-					});
+					start_miner();
 				
 				}else{
 					if(miner_child)miner_child.kill('SIGKILL');
