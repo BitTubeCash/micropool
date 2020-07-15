@@ -2,7 +2,7 @@
 
 Minimal BittubeCash Stratum Server (solopool)
 
-![screenshot](https://cdn.discordapp.com/attachments/713648425849192498/730138392825823332/unknown.png)
+![screenshot](https://media.discordapp.net/attachments/713648425849192498/733050802528321776/unknown.png)
 
 To run micropool-gui as a nodejs/electronjs app:
 
