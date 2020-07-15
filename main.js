@@ -2,6 +2,9 @@
 const {app, BrowserWindow, ipcMain} = require('electron')
 const storage = require('electron-json-storage');
 const contextMenu = require('electron-context-menu');
+const path = require('path');
+var os = require('os');
+var ifaces = os.networkInterfaces();
 
 var c29b = require('./c29b_nowasm.js');
 var verify_c29b = c29b.cwrap('c29b_verify', 'number', ['array','number','array']);
@@ -10,12 +13,17 @@ var shares=0;
 var blocks=0;
 var conn=0;
 
+var emb_miner_status = 0;
+var emb_daemon_status = 0;
+
 global.poolconfig = { 
-	poolport:0, 
+	poolport:25650, 
 	ctrlport:25651,// use with https://github.com/swap-dev/on-block-notify.git
-	daemonport:0,
-	daemonhost:'',
-	mining_address:''
+	daemonport:25182,
+	daemonhost:'127.0.0.1',
+	mining_address:'',
+	emb_miner:false,
+	emb_daemon:true
 };
 
 const http = require('http');
@@ -29,8 +37,12 @@ function seq(){
 	return id.toString();
 };
 
+function isDev() {
+	return process.mainModule.filename.indexOf('app.asar') === -1;
+}
+
 function Log() {}
-Log.prototype.log = function (level,message) {mainWindow.webContents.send('log', [level,message]);}
+Log.prototype.log = function (level,message) {if(mainWindow)mainWindow.webContents.send('log', [level,message]);}
 Log.prototype.info  = function (message) {this.log('info',message);}
 Log.prototype.error = function (message) {this.log('error',message);}
 Log.prototype.debug = function (message) {this.log('debug',message);}
@@ -130,9 +142,6 @@ function updateWallet() {
 	mainWindow.webContents.send('get-reply', ['mining_address', global.poolconfig.mining_address]);
 }
 
-function runDaemonCommand(command) {
-	logger.debug("Recieved Daemon Command: " + command);
-}
 
 function nonceCheck(miner,nonce) {
 
@@ -444,6 +453,38 @@ contextMenu({
 });
 
 let mainWindow;
+		
+function loadstorage(key,callback)
+{
+	storage.has(key,function(error,haskey) {
+		if(!error && haskey)
+		{
+			storage.get(key,function(error,object) {
+				if(!error && object)
+				{
+					callback(false,object);
+				}
+				else
+				{
+					callback(true);
+				}
+			});
+		}
+		else
+		{
+			callback(true);
+		}
+	});
+}
+
+
+var daemon_child;
+var miner_child;
+
+function runDaemonCommand(command) {
+	logger.debug("Recieved Daemon Command: " + command);
+	if(daemon_child)daemon_child.stdin.write(command+"\n");
+}
 
 function createWindow () {
 	// Create the browser window.
@@ -453,33 +494,230 @@ function createWindow () {
 		height: 800,
 		minWidth: 800,
 		minHeight: 310,
+		webPreferences: {nodeIntegration: true},
 		icon: __dirname + '/build/icon_small.png'
 	})
+
+	//mainWindow.webContents.openDevTools();
 
 	mainWindow.setMenu(null);
 
 	mainWindow.loadFile('index.html');
 
 	ipcMain.on('run',(event,arg) => {
-		if(arg[0] === "resetData") resetData();
-		if(arg[0] === "updateWallet") updateWallet();
+		//if(arg[0] === "resetData") resetData();
+		//if(arg[0] === "updateWallet") updateWallet();
 		if(arg[0] === "runDaemonCommand") runDaemonCommand(arg[1]);
 	});
-	
-	var started=0
 
+	ipcMain.on('init',() => {
+		loadstorage('poolport',function(error,object) {
+			if(!error) global.poolconfig.poolport = object;
+			loadstorage('ctrlport',function(error,object) {
+				if(!error) global.poolconfig.ctrlport = object;
+				loadstorage('daemonport',function(error,object) {
+					if(!error) global.poolconfig.daemonport = object;
+					loadstorage('mining_address',function(error,object) {
+						if(!error) global.poolconfig.mining_address = object;
+						loadstorage('emb_miner',function(error,object) {
+							if(!error) global.poolconfig.emb_miner = object;
+							console.log(object);
+							loadstorage('emb_daemon',function(error,object) {
+								if(!error) global.poolconfig.emb_daemon = object;
+								console.log(object);
+								loadstorage('daemonhost',function(error,object) {
+									if(!error) global.poolconfig.daemonhost = object;
+									
+									
+									Object.keys(ifaces).forEach(function (ifname) {
+										var alias = 0;
+
+										ifaces[ifname].forEach(function (iface) {
+											if ('IPv4' !== iface.family || iface.internal !== false) {
+												return;
+											}
+
+											if (alias >= 1) {
+												mainWindow.webContents.send('local_ip',iface.address);
+											} else {
+												mainWindow.webContents.send('local_ip',iface.address);
+											}
+											++alias;
+										});
+									});
+									
+									mainWindow.webContents.send('set','daemonport', global.poolconfig.daemonport);
+									mainWindow.webContents.send('set','ctrlport', global.poolconfig.ctrlport);
+									mainWindow.webContents.send('set','poolport', global.poolconfig.poolport);
+									mainWindow.webContents.send('set','mining_address', global.poolconfig.mining_address);
+									mainWindow.webContents.send('set','emb_miner', global.poolconfig.emb_miner);
+									mainWindow.webContents.send('set','emb_daemon', global.poolconfig.emb_daemon);
+									mainWindow.webContents.send('set','daemonhost', global.poolconfig.daemonhost);
+									if(global.poolconfig.poolport) {
+										logger.info("start swap micropool, port "+global.poolconfig.poolport);
+										server.listen(global.poolconfig.poolport,'0.0.0.0');
+									}
+									
+									if(global.poolconfig.emb_daemon == 1) {
+
+										var appRootDir = require('app-root-dir').get();
+										var daemonpath;
+										if(isDev){
+											daemonpath = appRootDir + '\\resources\\win\\bittubecashd.exe';
+										}else{
+											appRootDir = path.dirname(appRootDir);
+											daemonpath = appRootDir + '\\bin\\bittubecashd.exe';
+										}
+										const spawn = require( 'child_process' ).spawn;
+										if(global.poolconfig.daemonport == 25282){
+											daemon_child = spawn( daemonpath, ['--no-zmq','--testnet']);  //add whatever switches you need here, test on command line first
+										}
+										else if(global.poolconfig.daemonport == 25382){
+											daemon_child = spawn( daemonpath, ['--no-zmq','--stagenet']);  //add whatever switches you need here, test on command line first
+										}
+										else {
+											daemon_child = spawn( daemonpath, ['--no-zmq']);  //add whatever switches you need here, test on command line first
+										}
+										daemon_child.stdout.on( 'data', data => {
+											data = data.toString().replace(/^\s+|\s+$/g, '');
+											mainWindow.webContents.send('log_daemon', data);
+										});
+										daemon_child.stderr.on( 'data', data => {
+											logger.error( data );
+										});
+
+									}
+									
+									if(global.poolconfig.emb_miner == 1) {
+
+										var appRootDir = require('app-root-dir').get();
+										var minerpath;
+										if(isDev){
+											minerpath = appRootDir + '\\resources\\win\\miner.exe';
+										}else{
+											appRootDir = path.dirname(appRootDir);
+											minerpath = appRootDir + '\\bin\\miner.exe';
+										}
+										const spawn = require( 'child_process' ).spawn;
+										miner_child = spawn( minerpath, ['-w','0','--algo','cuckaroo29b','--server','127.0.0.1:'+global.poolconfig.poolport,'--user','emb']);  //add whatever switches you need here, test on command line first
+										miner_child.stdout.on( 'data', data => {
+											data = data.toString().replace(/^\s+|\s+$/g, '');
+											mainWindow.webContents.send('log_daemon', data);
+										});
+										miner_child.stderr.on( 'data', data => {
+											logger.error( data );
+										});
+									}
+									
+									setInterval(function(){updateJob('timer');}, 100);
+
+
+								});
+							});
+						});
+					});
+				});
+			});
+		});
+	});
+	
+/*	var started=0
+			started=1;
+				server.listen(25650,'0.0.0.0');
+				logger.info("start swap micropool, port 25650");
+			setInterval(function(){updateJob('timer');}, 100);
+*/
 	ipcMain.on('set',(event,arg) => {
 		if(arg[0] === "mining_address") global.poolconfig.mining_address=arg[1];
 		if(arg[0] === "daemonport") global.poolconfig.daemonport=arg[1];
 		if(arg[0] === "daemonhost") global.poolconfig.daemonhost=arg[1];
-		if(arg[0] === "poolport") global.poolconfig.poolport=arg[1];
+		if(arg[0] === "poolport"){
+			if(arg[1] != global.poolconfig.poolport) {
+				global.poolconfig.poolport=arg[1];
+				if(global.poolconfig.poolport) {
+					server.close(function(){
+						logger.info("start swap micropool, port "+global.poolconfig.poolport);
+						server.listen(global.poolconfig.poolport,'0.0.0.0');
+					});
+				}
+			}
+		}
 		if(arg[0] === "ctrlport") global.poolconfig.ctrlport=arg[1];
+		if(arg[0] === "emb_daemon"){
+			if(arg[1] != global.poolconfig.emb_daemon) {
+				global.poolconfig.emb_daemon=arg[1];
+				if(global.poolconfig.emb_daemon == 1) {
+					var appRootDir = require('app-root-dir').get();
+					var daemonpath;
+					if(isDev){
+						daemonpath = appRootDir + '\\resources\\win\\bittubecashd.exe';
+					}else{
+						appRootDir = path.dirname(appRootDir);
+						daemonpath = appRootDir + '\\bin\\bittubecashd.exe';
+					}
+					const spawn = require( 'child_process' ).spawn;
+					if(global.poolconfig.daemonport == 25282){
+						daemon_child = spawn( daemonpath, ['--no-zmq','--testnet']);  //add whatever switches you need here, test on command line first
+					}
+					else if(global.poolconfig.daemonport == 25382){
+						daemon_child = spawn( daemonpath, ['--no-zmq','--stagenet']);  //add whatever switches you need here, test on command line first
+					}
+					else {
+						daemon_child = spawn( daemonpath, ['--no-zmq']);  //add whatever switches you need here, test on command line first
+					}
+					daemon_child.stdout.on( 'data', data => {
+						data = data.toString().replace(/^\s+|\s+$/g, '');
+						mainWindow.webContents.send('log_daemon', data);
+					});
+					daemon_child.stderr.on( 'data', data => {
+						logger.error( data );
+					});
+				
+				}else{
+					if(daemon_child)daemon_child.kill();
+				}
+			}
+		}
+		if(arg[0] === "emb_miner"){
+			if(arg[1] != global.poolconfig.emb_miner) {
+				global.poolconfig.emb_miner=arg[1];
+				if(global.poolconfig.emb_miner == 1) {
+					
+					var appRootDir = require('app-root-dir').get();
+					var minerpath;
+					if(isDev){
+						minerpath = appRootDir + '\\resources\\win\\miner.exe';
+					}else{
+						appRootDir = path.dirname(appRootDir);
+						minerpath = appRootDir + '\\bin\\miner.exe';
+					}
+					const spawn = require( 'child_process' ).spawn;
+					miner_child = spawn( minerpath, ['-w','0','--algo','cuckaroo29b','--server','127.0.0.1:'+global.poolconfig.poolport,'--user','emb']);  //add whatever switches you need here, test on command line first
+					miner_child.stdout.on( 'data', data => {
+						data = data.toString().replace(/^\s+|\s+$/g, '');
+						mainWindow.webContents.send('log_daemon', data);
+					});
+					miner_child.stderr.on( 'data', data => {
+						logger.error( data );
+					});
+				
+				}else{
+					//const spawn = require( 'child_process' ).spawn;
+					//console.log(miner_child.pid);
+					//spawn("taskkill", ["/pid", miner_child.pid, '/f', '/t']);
+					if(miner_child)miner_child.kill('SIGKILL');
+				}
+			}
+		}
 
 		storage.set(arg[0],arg[1]);
-		
+	
+		console.log(arg[0]);
+		console.log(arg[1]);
+
 		//Alternative init since this ipcMain.on('set',...) codeblock runs after ipcMain.on('get',...) on a clean startup.
 		//therefore, no config in storage for the original init to work with on clean startup.
-		if(global.poolconfig.mining_address && global.poolconfig.daemonhost && global.poolconfig.daemonport && global.poolconfig.poolport && !started) 
+/*		if(global.poolconfig.mining_address && global.poolconfig.daemonhost && global.poolconfig.daemonport && global.poolconfig.poolport && !started) 
 		{
 			started=1;
 			updateJob('init',function(){
@@ -488,7 +726,8 @@ function createWindow () {
 			});
 			setInterval(function(){updateJob('timer');}, 100);
 		}
-	});
+*/	});
+/*
 
 	var count=0;
 
@@ -522,10 +761,33 @@ function createWindow () {
 	});
 
 	//mainWindow.webContents.openDevTools()
-
+	*/
 	mainWindow.on('closed', function () {
 		mainWindow = null
 	})
+
+	/*const appRootDir = require('app-root-dir').get();
+	const ffmpegpath = appRootDir + '\\resources\\win\\bittubecashd.exe';
+	const spawn = require( 'child_process' ).spawn;
+	const child = spawn( ffmpegpath, ['--no-zmq']);  //add whatever switches you need here, test on command line first
+	child.stdout.on( 'data', data => {
+		data = data.toString().replace(/^\s+|\s+$/g, '');
+		mainWindow.webContents.send('log_daemon', data);
+	});
+	child.stderr.on( 'data', data => {
+		logger.error( data );
+	});
+*/
+/*	const minerpath = appRootDir + '\\resources\\win\\miner.exe';
+	const miner = spawn( minerpath, ['--algo','cuckaroo29b','--server','127.0.0.1:25650','--user','emb']);  //add whatever switches you need here, test on command line first
+	miner.stdout.on( 'data', data => {
+		data = data.toString().replace(/^\s+|\s+$/g, '');
+		mainWindow.webContents.send('log_daemon', data);
+	});
+	miner.stderr.on( 'data', data => {
+		logger.error( data );
+	});
+*/
 }
 
 app.on('ready', createWindow)
@@ -541,3 +803,4 @@ app.on('activate', function () {
 		createWindow()
 	}
 })
+

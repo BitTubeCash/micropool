@@ -6,6 +6,10 @@
 	font-family: "Roboto-Thin";
 	src: url('webfonts/Roboto-Thin.ttf');
 }
+@font-face {
+	font-family: "Roboto-Mono";
+	src: url('webfonts/Roboto-Mono.ttf');
+}
 #body {
 	font-family: "Roboto-Thin";
 	margin:0;

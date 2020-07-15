@@ -4,11 +4,12 @@
 		<meta charset="UTF-8">
 		<link rel="stylesheet" href="resources/custom.css">
 		<link rel="stylesheet" href="resources/css/fa.css">
+		<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';">
 		<script>
 			function init()
 			{
 				openTab(event,'tablog');
-				updateData();
+				ipcRenderer.send('init');
 				tablinks = document.getElementsByClassName("tablinks");
 				tablinks[0].className += " active";
 				pullExchangeRate();
@@ -64,7 +65,7 @@
 								<tr>
 									<td><i class="fas fa-wallet fa-lg fa-fw"></i>&ensp;Wallet Address</td>
 									<td class="right-border1">
-										<input id="mining_address" value="" onchange="updateData()" style="width:calc(100% - 12px)" type="text"/>
+										<input id="mining_address" value="" onchange="ipcRenderer.send('set', ['mining_address',this.value.trim()]);" style="width:calc(100% - 12px)" type="text"/>
 									</td>
 								</tr>
 							</table>
@@ -83,7 +84,7 @@
 									<td><i class="fas fa-desktop fa-lg fa-fw"></i>&ensp;Daemon</td>
 									<td>
 										<label class="switch">
-											<input type="checkbox" id="switch_embed" onclick="handle_embed(this)" checked>
+											<input type="checkbox" id="switch_embed" onclick="handle_embed(this)">
 											<span class="slider round"></span>
 										</label>
 									</td>
@@ -104,7 +105,7 @@
 									<td><i class="fas fa-hammer  fa-lg fa-fw"></i>&ensp;Miner</td>
 									<td>
 										<label class="switch">
-											<input type="checkbox" id="switch_miner" onclick="handle_miner(this)" checked>
+											<input type="checkbox" id="switch_miner" onclick="handle_miner(this)">
 											<span class="slider round"></span>
 										</label>
 									</td>
@@ -123,7 +124,7 @@
 								<tr class="no-top-line">
 									<td><i class="fas fa-bolt fa-lg fa-fw"></i>&ensp;Mining IP</td>
 									<td class="right-border1">
-										<input id="local_ip" value="127.0.0.1" disabled="true" style="width:calc(100% - 12px)" type="text"/>
+										<input id="local_ip" value="" disabled="true" style="width:calc(100% - 12px)" type="text"/>
 									</td>
 								</tr>
 							</table>
@@ -139,7 +140,7 @@
 								<tr class="no-top-line">
 									<td><i class="fas fa-server fa-lg fa-fw"></i>&ensp;Daemon Host</td>
 									<td>
-										<input id="daemonhost" value=""style="width:100%" onchange="updateData()" type="text"/>
+										<input id="daemonhost" value=""style="width:100%" onchange="ipcRenderer.send('set', ['daemonhost',this.value]);" type="text"/>
 									</td>
 								</tr>
 							</table>
@@ -174,7 +175,7 @@
 								<tr class="no-top-line">
 									<td><i class="fas fa-plug fa-lg fa-fw"></i>&ensp;Mining Port</td>
 									<td class="right-border1">
-										<input id="poolport" value="" onchange="updateData()" style="width:calc(100% - 12px)" type="text"/>
+										<input id="poolport" value="" onchange="ipcRenderer.send('set', ['poolport',this.value]);" style="width:calc(100% - 12px)" type="text"/>
 									</td>
 								</tr>
 							</table>
@@ -664,7 +665,7 @@
 					document.getElementById("log").style.height='calc(100% - 25px)';
 					
 					//document.getElementById('daemonhost').value = "Embedded";
-					//ipcRenderer.send('set', ['isEmbedded', true]);
+					ipcRenderer.send('set', ['emb_daemon', 1]);
 				}
 				else {
 					document.getElementById('daemonhost').disabled = false;
@@ -672,19 +673,17 @@
 					document.getElementById("log").style.height='100%';
 
 					//document.getElementById('daemonhost').value="127.0.0.1";
-					//ipcRenderer.send('set', ['isEmbedded', false]);
+					ipcRenderer.send('set', ['emb_daemon', 2]);
 				}
-				updateData();
 			}
 			
 			function handle_miner(toggle) {
 				if (toggle.checked) {
-					//ipcRenderer.send('set', ['isEmbeddedMiner', true]);
+					ipcRenderer.send('set', ['emb_miner', 1]);
 				}
 				else {
-					//ipcRenderer.send('set', ['isEmbeddedMiner', false]);
+					ipcRenderer.send('set', ['emb_miner', 2]);
 				}
-				updateData();
 			}
 
 			function updateData() { 
@@ -711,12 +710,7 @@
 					document.getElementById('dropdowntopselection').textContent="Unknown";
 
 			}
-			const { ipcRenderer } = require('electron')
-			ipcRenderer.send('get', 'daemonport');
-			ipcRenderer.send('get', 'poolport');
-			ipcRenderer.send('get', 'ctrlport');
-			ipcRenderer.send('get', 'daemonhost');
-			ipcRenderer.send('get', 'mining_address');
+			const { ipcRenderer } = require('electron');
 			
 			ipcRenderer.on('get-reply', (event, arg) => {
 
@@ -737,8 +731,48 @@
 					document.getElementById(arg[0]).value=arg[1];
 				}
 			})
+			ipcRenderer.on('set', (event,item, arg) => {
+				console.log(item);
+				console.log(arg);
+
+				if(item == 'emb_miner'){
+					if (arg == 1) {
+						document.getElementById("switch_miner").checked=true;
+					}
+					else {
+						document.getElementById("switch_miner").checked=false;
+					}
+				}else if(item == 'emb_daemon'){
+					if (arg == 1) {
+						document.getElementById('daemonhost').disabled = true;
+						document.getElementById("daemon_command_input").style.display="block";
+						document.getElementById("log").style.height='calc(100% - 25px)';
+						document.getElementById("switch_embed").checked=true;
+					}
+					else {
+						document.getElementById('daemonhost').disabled = false;
+						document.getElementById("daemon_command_input").style.display="none";
+						document.getElementById("log").style.height='100%';
+						document.getElementById("switch_embed").checked=false;
+					}
+				}else{
+					document.getElementById(item).value=arg;
+				}
+				
+				if (document.getElementById('daemonport').value == 25182)
+					document.getElementById('dropdowntopselection').textContent="Mainnet";
+				else if (document.getElementById('daemonport').value == 25282)
+					document.getElementById('dropdowntopselection').textContent="Testnet";
+				else if (document.getElementById('daemonport').value == 25382)
+					document.getElementById('dropdowntopselection').textContent="Stagenet";
+				else
+					document.getElementById('dropdowntopselection').textContent="Unknown";
+			})
 			ipcRenderer.on('workers', (event, arg) => {
 				document.getElementById('workers').innerHTML=arg;
+			})
+			ipcRenderer.on('local_ip', (event, arg) => {
+				document.getElementById('local_ip').value+=arg+' ';
 			})
 			ipcRenderer.on('blocks', (event, arg) => {
 				document.getElementById('blocks').innerHTML=arg;
@@ -748,10 +782,22 @@
 			})
 			ipcRenderer.on('log', (event, msg) => {
 				var d = new Date();
+				if(loglines[0] && loglines[0][1] == ' <span id=log_level>['+msg[0]+']</span> '+msg[1]+'</span>') loglines.shift();
 				if ( (logLevel == 0 && msg[0] != "debug") || (logLevel == 1) )
-					loglines.unshift(Date(Date.now()).substr(4, 20)+' <span id=log_level>['+msg[0]+']</span> '+msg[1]);
+					loglines.unshift(['<span style="font-family:\'Roboto-Mono\'">'+Date(Date.now()).substr(4, 20),' <span id=log_level>['+msg[0]+']</span> '+msg[1]+'</span>']);
 				if (loglines.length > 100) loglines.pop();
-				document.getElementById('log').innerHTML=loglines.join('<br/>');
+				var html='';
+				for (var line of loglines)
+					html+=line.join('')+"<br/>";
+				document.getElementById('log').innerHTML=html;
+			});
+			ipcRenderer.on('log_daemon', (event, msg) => {
+				loglines.unshift(['<span style="color: #00abff;white-space: pre-wrap;font-family:\'Roboto-Mono\'">'+msg+'</span>','']);
+				if (loglines.length > 100) loglines.pop();
+				var html='';
+				for (var line of loglines)
+					html+=line.join('')+"<br/>";
+				document.getElementById('log').innerHTML=html;
 			});
 			
 			function setNodePreset(type) {
@@ -761,8 +807,18 @@
 					document.getElementById('daemonport').value=25282;
 				else if (type == "stagenet")
 					document.getElementById('daemonport').value=25382;                    
+				
+				ipcRenderer.send('set', ['daemonport',parseFloat(document.getElementById('daemonport').value)|0]);
+				
+				if (document.getElementById('daemonport').value == 25182)
+					document.getElementById('dropdowntopselection').textContent="Mainnet";
+				else if (document.getElementById('daemonport').value == 25282)
+					document.getElementById('dropdowntopselection').textContent="Testnet";
+				else if (document.getElementById('daemonport').value == 25382)
+					document.getElementById('dropdowntopselection').textContent="Stagenet";
+				else
+					document.getElementById('dropdowntopselection').textContent="Unknown";
 
-				updateData();
 			}
 			function resetData() {
 				ipcRenderer.send('run', ['resetData']);
