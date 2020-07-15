@@ -619,12 +619,6 @@ function createWindow () {
 		});
 	});
 	
-/*	var started=0
-			started=1;
-				server.listen(25650,'0.0.0.0');
-				logger.info("start swap micropool, port 25650");
-			setInterval(function(){updateJob('timer');}, 100);
-*/
 	ipcMain.on('set',(event,arg) => {
 		if(arg[0] === "mining_address") global.poolconfig.mining_address=arg[1];
 		if(arg[0] === "daemonport") global.poolconfig.daemonport=arg[1];
@@ -700,9 +694,6 @@ function createWindow () {
 					});
 				
 				}else{
-					//const spawn = require( 'child_process' ).spawn;
-					//console.log(miner_child.pid);
-					//spawn("taskkill", ["/pid", miner_child.pid, '/f', '/t']);
 					if(miner_child)miner_child.kill('SIGKILL');
 				}
 			}
@@ -710,79 +701,12 @@ function createWindow () {
 
 		storage.set(arg[0],arg[1]);
 
-		//Alternative init since this ipcMain.on('set',...) codeblock runs after ipcMain.on('get',...) on a clean startup.
-		//therefore, no config in storage for the original init to work with on clean startup.
-/*		if(global.poolconfig.mining_address && global.poolconfig.daemonhost && global.poolconfig.daemonport && global.poolconfig.poolport && !started) 
-		{
-			started=1;
-			updateJob('init',function(){
-				server.listen(global.poolconfig.poolport,'0.0.0.0');
-				logger.info("start swap micropool, port "+global.poolconfig.poolport);
-			});
-			setInterval(function(){updateJob('timer');}, 100);
-		}
-*/	});
-/*
-
-	var count=0;
-
-	ipcMain.on('get',(event,arg) => {
-		var sender = event.sender;
-		var arg0 = arg;
-		storage.has(arg0,function(error,haskey) {
-			if(!error && haskey)
-			{
-				storage.get(arg0,function(error,object) {
-					if(!error) sender.send('get-reply', [arg0,object]);
-					if(arg0 === "mining_address") global.poolconfig.mining_address=object;
-					if(arg0 === "daemonport") global.poolconfig.daemonport=object;
-					if(arg0 === "daemonhost") global.poolconfig.daemonhost=object;
-					if(arg0 === "poolport") global.poolconfig.poolport=object;
-					if(arg0 === "ctrlport") global.poolconfig.ctrlport=object;
-					count++;
-					
-					if(count == 5 && !started) 
-					{
-						started=1;
-						updateJob('init',function(){
-							server.listen(global.poolconfig.poolport,'0.0.0.0');
-							logger.info("start bittube micropool, port "+global.poolconfig.poolport);
-						});
-						setInterval(function(){updateJob('timer');}, 100);
-					}
-				});
-			}
-		});
 	});
-
-	//mainWindow.webContents.openDevTools()
-	*/
+	
 	mainWindow.on('closed', function () {
 		mainWindow = null
 	})
 
-	/*const appRootDir = require('app-root-dir').get();
-	const ffmpegpath = appRootDir + '\\resources\\win\\bittubecashd.exe';
-	const spawn = require( 'child_process' ).spawn;
-	const child = spawn( ffmpegpath, ['--no-zmq']);  //add whatever switches you need here, test on command line first
-	child.stdout.on( 'data', data => {
-		data = data.toString().replace(/^\s+|\s+$/g, '');
-		mainWindow.webContents.send('log_daemon', data);
-	});
-	child.stderr.on( 'data', data => {
-		logger.error( data );
-	});
-*/
-/*	const minerpath = appRootDir + '\\resources\\win\\miner.exe';
-	const miner = spawn( minerpath, ['--algo','cuckaroo29b','--server','127.0.0.1:25650','--user','emb']);  //add whatever switches you need here, test on command line first
-	miner.stdout.on( 'data', data => {
-		data = data.toString().replace(/^\s+|\s+$/g, '');
-		mainWindow.webContents.send('log_daemon', data);
-	});
-	miner.stderr.on( 'data', data => {
-		logger.error( data );
-	});
-*/
 }
 
 app.on('ready', createWindow)
