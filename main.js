@@ -611,7 +611,7 @@ function createWindow () {
 									mainWindow.webContents.send('set','emb_daemon', global.poolconfig.emb_daemon);
 									mainWindow.webContents.send('set','daemonhost', global.poolconfig.daemonhost);
 									if(global.poolconfig.poolport) {
-										logger.info("start swap micropool, port "+global.poolconfig.poolport);
+										logger.info("start bittubecash mining server, port "+global.poolconfig.poolport);
 										server.listen(global.poolconfig.poolport,'0.0.0.0');
 									}
 									
@@ -644,7 +644,7 @@ function createWindow () {
 				global.poolconfig.poolport=arg[1];
 				if(global.poolconfig.poolport) {
 					server.close(function(){
-						logger.info("start swap micropool, port "+global.poolconfig.poolport);
+						logger.info("start bittubecash mining server, port "+global.poolconfig.poolport);
 						server.listen(global.poolconfig.poolport,'0.0.0.0');
 					});
 				}
