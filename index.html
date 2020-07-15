@@ -60,7 +60,7 @@
 						<td colspan="3">
 							<table class="table-input-top" cellspacing="0" cellpadding="0">
 								<colgroup>
-									<col style="width: 135px">
+									<col style="width: 160px">
 									<col style="width: *">
 								</colgroup>
 								<tr>
@@ -77,20 +77,16 @@
 						<td>
 							<table class="table-input-top" cellspacing="0" cellpadding="0">
 								<colgroup>
-									<col style="width: 135px">
-									<col style="width: 50px">
+									<col style="width: 160px">
 									<col style="width: *">
 								</colgroup>
 								<tr class="no-top-line">
-									<td><i class="fas fa-desktop fa-lg fa-fw"></i>&ensp;Daemon</td>
+									<td><i class="fas fa-desktop fa-lg fa-fw"></i>&ensp;Embedded Daemon</td>
 									<td>
 										<label class="switch">
 											<input type="checkbox" id="switch_embed" onclick="handle_embed(this)">
 											<span class="slider round"></span>
 										</label>
-									</td>
-									<td>
-										<input id="daemon_status" disabled="true" style="width:100%" type="text"/>
 									</td>
 								</tr>
 							</table>
@@ -98,20 +94,16 @@
 						<td>
 							<table class="table-input-top table-input-top2" cellspacing="0" cellpadding="0">
 								<colgroup>
-									<col style="width: 132px">
-									<col style="width: 50px">
+									<col style="width: 140px">
 									<col style="width: *">
 								</colgroup>
 								<tr class="no-top-line">
-									<td><i class="fas fa-hammer  fa-lg fa-fw"></i>&ensp;Miner</td>
+									<td><i class="fas fa-hammer  fa-lg fa-fw"></i>&ensp;Embedded Miner</td>
 									<td>
 										<label class="switch">
 											<input type="checkbox" id="switch_miner" onclick="handle_miner(this)">
 											<span class="slider round"></span>
 										</label>
-									</td>
-									<td>
-										<input id="miner_status" disabled="true" style="width:100%" type="text"/>
 									</td>
 								</tr>
 							</table>
@@ -135,7 +127,7 @@
 						<td class="bottom-left-corner">
 							<table class="table-input-top" cellspacing="0" cellpadding="0">
 								<colgroup>
-									<col style="width: 135px">
+									<col style="width: 160px">
 									<col style="width: *">
 								</colgroup>
 								<tr class="no-top-line">
@@ -149,7 +141,7 @@
 						<td>
 							<table class="table-input-top table-input-top2" cellspacing="0" cellpadding="0">
 								<colgroup>
-									<col style="width: 132px">
+									<col style="width: 140px">
 									<col style="width: *">
 								</colgroup>
 								<tr class="no-top-line">
@@ -647,6 +639,7 @@
 			var currency = "TUBE";
 			var exchangeRate = 1;
 			var exchangePrefetch = true;
+			var uptime = new Date(0);
 			
 			function openExternal(link) {
 				open(link);
@@ -837,7 +830,12 @@
 					xmlhttp.send(); 
 				}
 			}
-
+			setInterval( function(){updateUptime();}, 1000); //every 1sec
+			function updateUptime()
+			{
+				uptime.setSeconds(uptime.getSeconds() + 1);
+				document.getElementById('data_uptime').value = uptime.toISOString().substr(11, 8)+'s';
+			}
 			window.onclick = function(event) {
 				if (!event.target.matches('.dropbtn')) {
 					var dropdowns = document.getElementsByClassName("dropdown-content");
