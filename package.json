@@ -13,7 +13,20 @@
     "electron": "^4.0.6"
   },
   "dependencies": {
+    "app-root-dir": "^1.0.2",
+    "electron-context-menu": "^2.0.1",
     "electron-json-storage": "^4.1.6",
-    "electron-context-menu": "^2.0.1"
+    "open": "^7.0.4"
+  },
+  "build": {
+    "extraFiles": [
+      {
+        "from": "resources/${os}",
+        "to": "resources/bin",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ]
   }
 }

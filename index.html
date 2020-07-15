@@ -4,14 +4,17 @@
 		<meta charset="UTF-8">
 		<link rel="stylesheet" href="resources/custom.css">
 		<link rel="stylesheet" href="resources/css/fa.css">
+		<meta http-equiv="Content-Security-Policy" content="script-src 'self' 'unsafe-inline';">
 		<script>
+			const { ipcRenderer } = require('electron');
 			function init()
 			{
 				openTab(event,'tablog');
-				updateData();
+				ipcRenderer.send('init');
 				tablinks = document.getElementsByClassName("tablinks");
 				tablinks[0].className += " active";
 				pullExchangeRate();
+				document.getElementById("log").style.height='calc(100% - 25px)';
 			}
 			function openTab(evt, cityName) {
 				var i, tabcontent, tablinks;
@@ -45,20 +48,25 @@
 							<div class="logo"><img src="resources/logo/bittube_logo.png" alt="Bittube Micropool" style="height:30px;"></div>
 						</th>
 						<th colspan="2">
-							<div class="toplinks"><a href="https://bittube.cash/" target="_blank">Website</a><a href="https://github.com/BitTubeCash" target="_blank">Github</a><a href="https://explorer.bit.tube" target="_blank">Explorer</a><a href="wallet.html" target="_blank">Paper Wallet</a></div>
+							<div class="toplinks">
+								<a onclick="openExternal('https://bittube.cash');">Website</a>
+								<a onclick="openExternal('https://github.com/BitTubeCash');">Github</a>
+								<a onclick="openExternal('https://explorer.bit.tube')";>Explorer</a>
+								<a href="wallet.html" target="_blank">Paper Wallet</a>
+							</div>
 						</th>
 					</tr>
 					<tr class="dashboard">
 						<td colspan="3">
 							<table class="table-input-top" cellspacing="0" cellpadding="0">
 								<colgroup>
-									<col style="width: 135px">
+									<col style="width: 160px">
 									<col style="width: *">
 								</colgroup>
 								<tr>
 									<td><i class="fas fa-wallet fa-lg fa-fw"></i>&ensp;Wallet Address</td>
 									<td class="right-border1">
-										<input id="mining_address" value="" onchange="updateData()" style="width:calc(100% - 12px)" type="text"/>
+										<input id="mining_address" value="" onchange="ipcRenderer.send('set', ['mining_address',this.value.trim()]);" style="width:calc(100% - 12px)" type="text"/>
 									</td>
 								</tr>
 							</table>
@@ -66,16 +74,19 @@
 
 					</tr>
 					<tr class="dashboard">
-						<td class="bottom-left-corner">
+						<td>
 							<table class="table-input-top" cellspacing="0" cellpadding="0">
 								<colgroup>
-									<col style="width: 135px">
+									<col style="width: 160px">
 									<col style="width: *">
 								</colgroup>
 								<tr class="no-top-line">
-									<td><i class="fas fa-server fa-lg fa-fw"></i>&ensp;Daemon Host</td>
+									<td><i class="fas fa-desktop fa-lg fa-fw"></i>&ensp;Embedded Daemon</td>
 									<td>
-										<input id="daemonhost" value=""style="width:100%" onchange="updateData()" type="text"/>
+										<label class="switch">
+											<input type="checkbox" id="switch_embed" onclick="handle_embed(this)">
+											<span class="slider round"></span>
+										</label>
 									</td>
 								</tr>
 							</table>
@@ -83,7 +94,54 @@
 						<td>
 							<table class="table-input-top table-input-top2" cellspacing="0" cellpadding="0">
 								<colgroup>
-									<col style="width: 132px">
+									<col style="width: 140px">
+									<col style="width: *">
+								</colgroup>
+								<tr class="no-top-line">
+									<td><i class="fas fa-hammer  fa-lg fa-fw"></i>&ensp;Embedded Miner</td>
+									<td>
+										<label class="switch">
+											<input type="checkbox" id="switch_miner" onclick="handle_miner(this)">
+											<span class="slider round"></span>
+										</label>
+									</td>
+								</tr>
+							</table>
+						</td>
+						<td>
+							<table class="table-input-top table-input-top2" cellspacing="0" cellpadding="0">
+								<colgroup>
+									<col style="width: 125px">
+									<col style="width: *">
+								</colgroup>
+								<tr class="no-top-line">
+									<td><i class="fas fa-bolt fa-lg fa-fw"></i>&ensp;Mining IP</td>
+									<td class="right-border1">
+										<input id="local_ip" value="" disabled="true" style="width:calc(100% - 12px)" type="text"/>
+									</td>
+								</tr>
+							</table>
+						</td>
+					</tr>
+					<tr class="dashboard">
+						<td class="bottom-left-corner">
+							<table class="table-input-top" cellspacing="0" cellpadding="0">
+								<colgroup>
+									<col style="width: 160px">
+									<col style="width: *">
+								</colgroup>
+								<tr class="no-top-line">
+									<td><i class="fas fa-server fa-lg fa-fw"></i>&ensp;Daemon Host</td>
+									<td>
+										<input id="daemonhost" value=""style="width:100%" onchange="ipcRenderer.send('set', ['daemonhost',this.value]);" type="text"/>
+									</td>
+								</tr>
+							</table>
+						</td>
+						<td>
+							<table class="table-input-top table-input-top2" cellspacing="0" cellpadding="0">
+								<colgroup>
+									<col style="width: 140px">
 									<col style="width: *">
 								</colgroup>
 								<tr class="no-top-line">
@@ -110,7 +168,7 @@
 								<tr class="no-top-line">
 									<td><i class="fas fa-plug fa-lg fa-fw"></i>&ensp;Mining Port</td>
 									<td class="right-border1">
-										<input id="poolport" value="" onchange="updateData()" style="width:calc(100% - 12px)" type="text"/>
+										<input id="poolport" value="" onchange="ipcRenderer.send('set', ['poolport',this.value]);" style="width:calc(100% - 12px)" type="text"/>
 									</td>
 								</tr>
 							</table>
@@ -142,7 +200,7 @@
 								<col style="width: *">
 							</colgroup>
 							<tr>
-								<td><i class="fas fa-route fa-lg fa-fw"></i>&ensp;Solutions</td>
+								<td><i class="fas fa-users  fa-lg fa-fw"></i>&ensp;Workers</td>
 							</tr>
 						</table>
 					</td>
@@ -152,7 +210,7 @@
 								<col style="width: *">
 							</colgroup>
 							<tr>
-								<td><i class="fas fa-cubes fa-lg fa-fw"></i>&ensp;Blocks Found</td>
+								<td><i class="fas fa-route fa-lg fa-fw"></i>&ensp;Solutions</td>
 							</tr>
 						</table>
 					</td>
@@ -187,7 +245,7 @@
 							</colgroup>
 							<tr>
 								<td class="data">
-									<input disabled="true" id="data_shares" style="width:100%" type="text" value="0"/>
+									<input disabled="true" value="0" id="data_conn" style="width:100%" type="text"/>
 								</td>
 							</tr>
 						</table>
@@ -199,7 +257,7 @@
 							</colgroup>
 							<tr>
 								<td class="data">
-									<input disabled="true" value="0" id="data_blocks" style="width:100%" type="text"/>
+									<input disabled="true" id="data_shares" style="width:100%" type="text" value="0"/>
 								</td>
 							</tr>
 						</table>
@@ -254,7 +312,7 @@
 								<col style="width: *">
 							</colgroup>
 							<tr>
-								<td><i class="fas fa-chart-line fa-lg fa-fw"></i>&ensp;Current Effort</td>
+								<td><i class="fas fa-clock fa-lg fa-fw"></i>&ensp;Uptime</td>
 							</tr>
 						</table>
 					</td>
@@ -303,7 +361,7 @@
 							</colgroup>
 							<tr>
 								<td class="data">
-									<input disabled="true" value="0.00%" id="data_currenteffort" style="width:100%" type="text"/>
+									<input disabled="true" value="00:00:00s" id="data_uptime" style="width:100%" type="text"/>
 								</td>
 							</tr>
 						</table>
@@ -316,7 +374,7 @@
 								<col style="width: *">
 							</colgroup>
 							<tr>
-								<td><i class="fas fa-users fa-lg fa-fw"></i>&ensp;Workers</td>
+								<td><i class="fas fa-coins fa-lg fa-fw"></i>&ensp;Total Earned</td>
 							</tr>
 						</table>
 					</td>
@@ -346,7 +404,7 @@
 								<col style="width: *">
 							</colgroup>
 							<tr>
-								<td><i class="fas fa-chart-line fa-lg fa-fw"></i>&ensp;Average Effort</td>
+								<td><i class="fas fa-chart-line fa-lg fa-fw"></i>&ensp;Current Effort</td>
 							</tr>
 						</table>
 					</td>
@@ -359,7 +417,7 @@
 							</colgroup>
 							<tr>
 								<td class="data data_left">
-									<input disabled="true" id="data_conn" style="width:100%" type="text" value="0"/>
+									<input disabled="true" id="data_total_earned" style="width:100%" type="text" value="0.00 TUBE"/>
 								</td>
 							</tr>
 						</table>
@@ -395,6 +453,99 @@
 							</colgroup>
 							<tr>
 								<td class="data">
+									<input disabled="true" value="0.00%" id="data_currenteffort" style="width:100%" type="text"/>
+								</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<table class="table-header" cellspacing="0" cellpadding="0">
+							<colgroup>
+								<col style="width: *">
+							</colgroup>
+							<tr>
+								<td><i class="fas fa-cubes fa-lg fa-fw"></i>&ensp;Block Found</td>
+							</tr>
+						</table>
+					</td>
+					<td>
+						<table class="table-header table-header2" cellspacing="0" cellpadding="0">
+							<colgroup>
+								<col style="width: *">
+							</colgroup>
+							<tr>
+								<td><i class="fas fa-unlock-alt fa-lg fa-fw"></i>&ensp;Unlocked Blocks</td>
+							</tr>
+						</table>
+					</td>
+					<td>
+						<table class="table-header table-header2" cellspacing="0" cellpadding="0">
+							<colgroup>
+								<col style="width: *">
+							</colgroup>
+							<tr>
+								<td><i class="fas fa-times-circle fa-lg fa-fw"></i>&ensp;Orphan Blocks</td>
+							</tr>
+						</table>
+					</td>
+					<td>
+						<table class="table-header table-header2" cellspacing="0" cellpadding="0">
+							<colgroup>
+								<col style="width: *">
+							</colgroup>
+							<tr>
+								<td><i class="fas fa-chart-line fa-lg fa-fw"></i>&ensp;Average Effort</td>
+							</tr>
+						</table>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<table style="padding-left:0px;margin-top:0px;width:100%;table-layout: fixed;border:0;" cellspacing="0" cellpadding="0">
+							<colgroup>
+								<col style="width: *">
+							</colgroup>
+							<tr>
+								<td class="data data_left">
+									<input disabled="true" id="data_blocks" style="width:100%" type="text" value="0"/>
+								</td>
+							</tr>
+						</table>
+					</td>
+					<td>
+						<table style="padding-left:20px;margin-top:0px;width:100%;table-layout: fixed;border:0;" cellspacing="0" cellpadding="0">
+							<colgroup>
+								<col style="width: *">
+							</colgroup>
+							<tr>
+								<td class="data">
+									<input disabled="true" value="0" id="data_blocks_unlocked" style="width:100%" type="text"/>
+
+								</td>
+							</tr>
+						</table>
+					</td>
+					<td>
+						<table style="padding-left:20px;margin-top:0px;width:100%;table-layout: fixed;border:0;" cellspacing="0" cellpadding="0">
+							<colgroup>
+								<col style="width: *">
+							</colgroup>
+							<tr>
+								<td class="data">
+									<input disabled="true" value="0" id="data_blocks_orphaned" style="width:100%" type="text"/>
+								</td>
+							</tr>
+						</table>
+					</td>
+					<td>
+						<table style="padding-left:20px;margin-top:0px;width:100%;table-layout: fixed;border:0;" cellspacing="0" cellpadding="0">
+							<colgroup>
+								<col style="width: *">
+							</colgroup>
+							<tr>
+								<td class="data">
 									<input disabled="true" value="0.00%" id="data_averageeffort" style="width:100%" type="text"/>
 								</td>
 							</tr>
@@ -413,6 +564,7 @@
 			<div id="tablog" class="tabcontent">
 				<div id="log">
 				</div>
+				<input id="daemon_command_input" placeholder="Daemon CLI>" onkeydown="handle_daemon_command(this)" type="text"/>
 			</div>
 
 			<div id="tabworker" class="tabcontent">
@@ -477,47 +629,57 @@
 					<input id="ctrlport" value="" type="hidden"/>
 				</div>
 			</div>
-
 		</div>
 		<script src="konami.js"></script>
 		<script>
 			var electron = require('electron');
+			var open = require("open");
 			var loglines = [];
 			var blockslines = [];
 			var currency = "TUBE";
 			var exchangeRate = 1;
 			var exchangePrefetch = true;
-
-			function updateData() { 
-				if( (document.getElementById('daemonport').value < 1024)||(document.getElementById('daemonport').value > 65535))
-					document.getElementById('daemonport').value=25182;
-				if( (document.getElementById('poolport').value < 1024)||(document.getElementById('poolport').value > 65535))
-					document.getElementById('poolport').value=25650;
-				if( (document.getElementById('ctrlport').value < 1024)||(document.getElementById('ctrlport').value > 65535))
-					document.getElementById('ctrlport').value=25651;
-				
-				ipcRenderer.send('set', ['daemonport',parseFloat(document.getElementById('daemonport').value)|0]);
-				ipcRenderer.send('set', ['poolport',parseFloat(document.getElementById('poolport').value)|0]);
-				ipcRenderer.send('set', ['ctrlport',document.getElementById('ctrlport').value]);
-				ipcRenderer.send('set', ['daemonhost',document.getElementById('daemonhost').value]);
-				ipcRenderer.send('set', ['mining_address',document.getElementById('mining_address').value]);
-				
-				if (document.getElementById('daemonport').value == 25182)
-					document.getElementById('dropdowntopselection').textContent="Mainnet";
-				else if (document.getElementById('daemonport').value == 25282)
-					document.getElementById('dropdowntopselection').textContent="Testnet";
-				else if (document.getElementById('daemonport').value == 25382)
-					document.getElementById('dropdowntopselection').textContent="Stagenet";
-				else
-					document.getElementById('dropdowntopselection').textContent="Unknown";
-
+			var uptime = new Date(0);
+			
+			function openExternal(link) {
+				open(link);
 			}
-			const { ipcRenderer } = require('electron')
-			ipcRenderer.send('get', 'daemonport');
-			ipcRenderer.send('get', 'poolport');
-			ipcRenderer.send('get', 'ctrlport');
-			ipcRenderer.send('get', 'daemonhost');
-			ipcRenderer.send('get', 'mining_address');
+
+			function handle_daemon_command(input) {
+				if(event.key === 'Enter') {
+					ipcRenderer.send('run', ['runDaemonCommand',  input.value]);
+					input.value = "";
+				}
+			}
+			
+			function handle_embed(toggle) {
+				if (toggle.checked) {
+					document.getElementById('daemonhost').disabled = true;
+					document.getElementById("daemon_command_input").style.display="block";
+					document.getElementById("log").style.height='calc(100% - 25px)';
+					
+					//document.getElementById('daemonhost').value = "Embedded";
+					ipcRenderer.send('set', ['emb_daemon', 1]);
+				}
+				else {
+					document.getElementById('daemonhost').disabled = false;
+					document.getElementById("daemon_command_input").style.display="none";
+					document.getElementById("log").style.height='100%';
+
+					//document.getElementById('daemonhost').value="127.0.0.1";
+					ipcRenderer.send('set', ['emb_daemon', 2]);
+				}
+			}
+			
+			function handle_miner(toggle) {
+				if (toggle.checked) {
+					ipcRenderer.send('set', ['emb_miner', 1]);
+				}
+				else {
+					ipcRenderer.send('set', ['emb_miner', 2]);
+				}
+			}
+
 			
 			ipcRenderer.on('get-reply', (event, arg) => {
 
@@ -538,21 +700,73 @@
 					document.getElementById(arg[0]).value=arg[1];
 				}
 			})
+			ipcRenderer.on('set', (event,item, arg) => {
+				console.log(item);
+				console.log(arg);
+
+				if(item == 'emb_miner'){
+					if (arg == 1) {
+						document.getElementById("switch_miner").checked=true;
+					}
+					else {
+						document.getElementById("switch_miner").checked=false;
+					}
+				}else if(item == 'emb_daemon'){
+					if (arg == 1) {
+						document.getElementById('daemonhost').disabled = true;
+						document.getElementById("daemon_command_input").style.display="block";
+						document.getElementById("log").style.height='calc(100% - 25px)';
+						document.getElementById("switch_embed").checked=true;
+					}
+					else {
+						document.getElementById('daemonhost').disabled = false;
+						document.getElementById("daemon_command_input").style.display="none";
+						document.getElementById("log").style.height='100%';
+						document.getElementById("switch_embed").checked=false;
+					}
+				}else{
+					document.getElementById(item).value=arg;
+				}
+				
+				if (document.getElementById('daemonport').value == 25182)
+					document.getElementById('dropdowntopselection').textContent="Mainnet";
+				else if (document.getElementById('daemonport').value == 25282)
+					document.getElementById('dropdowntopselection').textContent="Testnet";
+				else if (document.getElementById('daemonport').value == 25382)
+					document.getElementById('dropdowntopselection').textContent="Stagenet";
+				else
+					document.getElementById('dropdowntopselection').textContent="Unknown";
+			})
 			ipcRenderer.on('workers', (event, arg) => {
 				document.getElementById('workers').innerHTML=arg;
 			})
+			ipcRenderer.on('local_ip', (event, arg) => {
+				document.getElementById('local_ip').value+=arg+' ';
+			})
 			ipcRenderer.on('blocks', (event, arg) => {
-                document.getElementById('blocks').innerHTML=arg;
+				document.getElementById('blocks').innerHTML=arg;
 				//blockslines.unshift(d.toISOString().substr(0, 19)+'&emsp;'+msg[0]+'<span id=blocks_hash><a href="https://explorer.bittube.app/block/'+msg[1]+'" target="_blank">'+msg[1]+'</a>+&emsp;'+msg[2]);
 				//if (blockslines.length > 100) blockslines.pop();
 				//document.getElementById('blocks').innerHTML=blockslines.join('<br/>');
 			})
 			ipcRenderer.on('log', (event, msg) => {
 				var d = new Date();
+				if(loglines[0] && loglines[0][1] == ' <span id=log_level>['+msg[0]+']</span> '+msg[1]+'</span>') loglines.shift();
 				if ( (logLevel == 0 && msg[0] != "debug") || (logLevel == 1) )
-					loglines.unshift(Date(Date.now()).substr(4, 20)+' <span id=log_level>['+msg[0]+']</span> '+msg[1]);
+					loglines.unshift(['<span style="font-family:\'Roboto-Mono\'">'+Date(Date.now()).substr(4, 20),' <span id=log_level>['+msg[0]+']</span> '+msg[1]+'</span>']);
 				if (loglines.length > 100) loglines.pop();
-				document.getElementById('log').innerHTML=loglines.join('<br/>');
+				var html='';
+				for (var line of loglines)
+					html+=line.join('')+"<br/>";
+				document.getElementById('log').innerHTML=html;
+			});
+			ipcRenderer.on('log_daemon', (event, msg) => {
+				loglines.unshift(['<span style="color: #00abff;white-space: pre-wrap;font-family:\'Roboto-Mono\'">'+msg+'</span>','']);
+				if (loglines.length > 100) loglines.pop();
+				var html='';
+				for (var line of loglines)
+					html+=line.join('')+"<br/>";
+				document.getElementById('log').innerHTML=html;
 			});
 			
 			function setNodePreset(type) {
@@ -562,8 +776,18 @@
 					document.getElementById('daemonport').value=25282;
 				else if (type == "stagenet")
 					document.getElementById('daemonport').value=25382;                    
+				
+				ipcRenderer.send('set', ['daemonport',parseFloat(document.getElementById('daemonport').value)|0]);
+				
+				if (document.getElementById('daemonport').value == 25182)
+					document.getElementById('dropdowntopselection').textContent="Mainnet";
+				else if (document.getElementById('daemonport').value == 25282)
+					document.getElementById('dropdowntopselection').textContent="Testnet";
+				else if (document.getElementById('daemonport').value == 25382)
+					document.getElementById('dropdowntopselection').textContent="Stagenet";
+				else
+					document.getElementById('dropdowntopselection').textContent="Unknown";
 
-				updateData();
 			}
 			function resetData() {
 				ipcRenderer.send('run', ['resetData']);
@@ -606,7 +830,12 @@
 					xmlhttp.send(); 
 				}
 			}
-
+			setInterval( function(){updateUptime();}, 1000); //every 1sec
+			function updateUptime()
+			{
+				uptime.setSeconds(uptime.getSeconds() + 1);
+				document.getElementById('data_uptime').value = uptime.toISOString().substr(11, 8)+'s';
+			}
 			window.onclick = function(event) {
 				if (!event.target.matches('.dropbtn')) {
 					var dropdowns = document.getElementsByClassName("dropdown-content");

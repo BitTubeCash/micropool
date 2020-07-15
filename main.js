@@ -2,25 +2,31 @@
 const {app, BrowserWindow, ipcMain} = require('electron')
 const storage = require('electron-json-storage');
 const contextMenu = require('electron-context-menu');
+const path = require('path');
+var os = require('os');
+var ifaces = os.networkInterfaces();
 
 var c29b = require('./c29b_nowasm.js');
 var verify_c29b = c29b.cwrap('c29b_verify', 'number', ['array','number','array']);
 var check_diff = c29b.cwrap('check_diff', 'number', ['number','array']);
-var shares=0;
-var blocks=0;
-var conn=0;
+
+var emb_miner_status = 0;
+var emb_daemon_status = 0;
 
 global.poolconfig = { 
-	poolport:0, 
+	poolport:25650, 
 	ctrlport:25651,// use with https://github.com/swap-dev/on-block-notify.git
-	daemonport:0,
-	daemonhost:'',
-	mining_address:''
+	daemonport:25182,
+	daemonhost:'127.0.0.1',
+	mining_address:'',
+	emb_miner:false,
+	emb_daemon:true
 };
 
 const http = require('http');
 const https = require('https');
 const net = require("net");
+
 
 function seq(){
 	var min = 1000000000;
@@ -29,8 +35,12 @@ function seq(){
 	return id.toString();
 };
 
+function isDev() {
+	return process.mainModule.filename.indexOf('app.asar') === -1;
+}
+
 function Log() {}
-Log.prototype.log = function (level,message) {mainWindow.webContents.send('log', [level,message]);}
+Log.prototype.log = function (level,message) {if(mainWindow)mainWindow.webContents.send('log', [level,message]);}
 Log.prototype.info  = function (message) {this.log('info',message);}
 Log.prototype.error = function (message) {this.log('error',message);}
 Log.prototype.debug = function (message) {this.log('debug',message);}
@@ -114,18 +124,74 @@ var jobcounter        = 0;
 var blockstxt         = "";
 var jobshares         = 0;
 var totalEffort       = 0;
+var shares=0;
+var blocks=0;
+var blocks_unlocked=0;
+var blocks_orphaned=0;
+var unlocked_coins=0;
+var conn=0;
+var locked_blocks = [];
 
-function resetData()
-{
+function resetData() {
 	shares=0;
 	blocks=0;
 	jobshares=0;
 	totalEffort=0;
+	blocks_unlocked=0;
+	blocks_orphaned=0;
+	unlocked_coins=0;
+	locked_blocks=[];
 	mainWindow.webContents.send('get-reply', ['data_shares', 0]);
 	mainWindow.webContents.send('get-reply', ['data_blocks', 0]);
 	mainWindow.webContents.send('get-reply', ['data_currenteffort', "0.00%"]);
 	mainWindow.webContents.send('get-reply', ['data_averageeffort', "0.00%"]);
 }
+
+function check_block(block) {
+
+	rpc('getblock', {height: block[1]}, function(error,result){
+
+		if(block[0] == result.block_header.hash){
+			blocks_unlocked++;
+			unlocked_coins+=result.block_header.reward;
+		}
+		else{
+			blocks_orphaned++;
+		}
+		mainWindow.webContents.send('get-reply', ['data_blocks_unlocked',blocks_unlocked]);
+		mainWindow.webContents.send('get-reply', ['data_blocks_orphaned',blocks_orphaned]);
+		mainWindow.webContents.send('get-reply', ['data_total_earned',((unlocked_coins/1000000000).toFixed(2))+' TUBE']);
+	
+	});
+}
+
+function unlocker(){
+
+	var blocks=[];
+
+	for(var block of locked_blocks){
+
+		if(block[1]+60 < current_height)
+		{
+			check_block(block);
+		}
+		else
+		{
+			blocks.unshift(block);
+		}
+	}
+
+	locked_blocks=blocks;
+
+
+}
+
+setInterval(unlocker, 5000);
+
+function updateWallet() {
+	mainWindow.webContents.send('set', 'mining_address', global.poolconfig.mining_address);
+}
+
 
 function nonceCheck(miner,nonce) {
 
@@ -273,7 +339,8 @@ Miner.prototype.nextnonce = function () {
 	
 	return this.jobnonce;
 }
-	
+
+
 function handleClient(data,miner){
 	
 	logger.debug("m->p "+data);
@@ -359,6 +426,7 @@ function handleClient(data,miner){
 
 			rpc('submitblock', [block.toString('hex')], function(error, result){
 				logger.info('BLOCK ('+miner.login+')');
+				locked_blocks.unshift([result.hash,block_found_height,(jobshares/current_target*100).toFixed(2)+'%']);
 				updateJob('found block');
 				blocks++;
 				mainWindow.webContents.send('get-reply', ['data_blocks',blocks]);
@@ -437,6 +505,97 @@ contextMenu({
 });
 
 let mainWindow;
+		
+function loadstorage(key,callback)
+{
+	storage.has(key,function(error,haskey) {
+		if(!error && haskey)
+		{
+			storage.get(key,function(error,object) {
+				if(!error && object)
+				{
+					callback(false,object);
+				}
+				else
+				{
+					callback(true);
+				}
+			});
+		}
+		else
+		{
+			callback(true);
+		}
+	});
+}
+
+
+var daemon_child;
+var miner_child;
+
+function runDaemonCommand(command) {
+	logger.debug("Recieved Daemon Command: " + command);
+	if(daemon_child)daemon_child.stdin.write(command+"\n");
+}
+
+function start_daemon() {
+
+	var appRootDir = require('app-root-dir').get();
+	var daemonpath;
+	if(isDev){
+		daemonpath = appRootDir + '\\resources\\win\\bittubecashd.exe';
+	}else{
+		appRootDir = path.dirname(appRootDir);
+		daemonpath = appRootDir + '\\bin\\bittubecashd.exe';
+	}
+	const spawn = require( 'child_process' ).spawn;
+	if(global.poolconfig.daemonport == 25282){
+		daemon_child = spawn( daemonpath, ['--no-zmq','--testnet']);  //add whatever switches you need here, test on command line first
+	}
+	else if(global.poolconfig.daemonport == 25382){
+		daemon_child = spawn( daemonpath, ['--no-zmq','--stagenet']);  //add whatever switches you need here, test on command line first
+	}
+	else {
+		daemon_child = spawn( daemonpath, ['--no-zmq']);  //add whatever switches you need here, test on command line first
+	}
+	var initial = 1;
+	var buffer = '';
+	daemon_child.stdout.on( 'data', data => {
+		if(initial) {
+			buffer+=data;
+		}else{
+			data = data.toString().replace(/^\s+|\s+$/g, '');
+			mainWindow.webContents.send('log_daemon', buffer+data);
+			buffer='';
+		}
+		if(buffer.includes('core RPC server started')) initial = 0;
+	});
+	daemon_child.stderr.on( 'data', data => {
+		logger.error( data );
+	});
+}
+function start_miner() {
+	
+	var appRootDir = require('app-root-dir').get();
+	var minerpath;
+	if(isDev){
+		minerpath = appRootDir + '\\resources\\win\\miner.exe';
+	}else{
+		appRootDir = path.dirname(appRootDir);
+		minerpath = appRootDir + '\\bin\\miner.exe';
+	}
+	const spawn = require( 'child_process' ).spawn;
+	miner_child = spawn( minerpath, ['-w','0','--algo','cuckaroo29b','--server','127.0.0.1:'+global.poolconfig.poolport,'--user','emb']);  //add whatever switches you need here, test on command line first
+	miner_child.stdout.on( 'data', data => {
+		data = data.toString().replace(/^\s+|\s+$/g, '');
+		mainWindow.webContents.send('log_daemon', data);
+	});
+	miner_child.stderr.on( 'data', data => {
+		logger.error( data );
+	});
+
+}
+
 
 function createWindow () {
 	// Create the browser window.
@@ -446,8 +605,11 @@ function createWindow () {
 		height: 800,
 		minWidth: 800,
 		minHeight: 310,
+		webPreferences: {nodeIntegration: true},
 		icon: __dirname + '/build/icon_small.png'
 	})
+
+	//mainWindow.webContents.openDevTools();
 
 	mainWindow.setMenu(null);
 
@@ -455,68 +617,123 @@ function createWindow () {
 
 	ipcMain.on('run',(event,arg) => {
 		if(arg[0] === "resetData") resetData();
+		if(arg[0] === "updateWallet") updateWallet();
+		if(arg[0] === "runDaemonCommand") runDaemonCommand(arg[1]);
+	});
+
+	ipcMain.on('init',() => {
+		loadstorage('poolport',function(error,object) {
+			if(!error) global.poolconfig.poolport = object;
+			loadstorage('ctrlport',function(error,object) {
+				if(!error) global.poolconfig.ctrlport = object;
+				loadstorage('daemonport',function(error,object) {
+					if(!error) global.poolconfig.daemonport = object;
+					loadstorage('mining_address',function(error,object) {
+						if(!error) global.poolconfig.mining_address = object;
+						loadstorage('emb_miner',function(error,object) {
+							if(!error) global.poolconfig.emb_miner = object;
+							loadstorage('emb_daemon',function(error,object) {
+								if(!error) global.poolconfig.emb_daemon = object;
+								loadstorage('daemonhost',function(error,object) {
+									if(!error) global.poolconfig.daemonhost = object;
+									
+									
+									Object.keys(ifaces).forEach(function (ifname) {
+										var alias = 0;
+
+										ifaces[ifname].forEach(function (iface) {
+											if ('IPv4' !== iface.family || iface.internal !== false) {
+												return;
+											}
+
+											if (alias >= 1) {
+												mainWindow.webContents.send('local_ip',iface.address);
+											} else {
+												mainWindow.webContents.send('local_ip',iface.address);
+											}
+											++alias;
+										});
+									});
+									
+									mainWindow.webContents.send('set','daemonport', global.poolconfig.daemonport);
+									mainWindow.webContents.send('set','ctrlport', global.poolconfig.ctrlport);
+									mainWindow.webContents.send('set','poolport', global.poolconfig.poolport);
+									mainWindow.webContents.send('set','mining_address', global.poolconfig.mining_address);
+									mainWindow.webContents.send('set','emb_miner', global.poolconfig.emb_miner);
+									mainWindow.webContents.send('set','emb_daemon', global.poolconfig.emb_daemon);
+									mainWindow.webContents.send('set','daemonhost', global.poolconfig.daemonhost);
+									if(global.poolconfig.poolport) {
+										logger.info("start bittubecash mining server, port "+global.poolconfig.poolport);
+										server.listen(global.poolconfig.poolport,'0.0.0.0');
+									}
+									
+									if(global.poolconfig.emb_daemon == 1) {
+										start_daemon();
+									}
+									
+									if(global.poolconfig.emb_miner == 1) {
+										start_miner();
+									}
+									
+									setInterval(function(){updateJob('timer');}, 100);
+
+
+								});
+							});
+						});
+					});
+				});
+			});
+		});
 	});
 	
-	var started=0
-
 	ipcMain.on('set',(event,arg) => {
 		if(arg[0] === "mining_address") global.poolconfig.mining_address=arg[1];
 		if(arg[0] === "daemonport") global.poolconfig.daemonport=arg[1];
 		if(arg[0] === "daemonhost") global.poolconfig.daemonhost=arg[1];
-		if(arg[0] === "poolport") global.poolconfig.poolport=arg[1];
+		if(arg[0] === "poolport"){
+			if(arg[1] != global.poolconfig.poolport) {
+				global.poolconfig.poolport=arg[1];
+				if(global.poolconfig.poolport) {
+					server.close(function(){
+						logger.info("start bittubecash mining server, port "+global.poolconfig.poolport);
+						server.listen(global.poolconfig.poolport,'0.0.0.0');
+					});
+				}
+			}
+		}
 		if(arg[0] === "ctrlport") global.poolconfig.ctrlport=arg[1];
+		if(arg[0] === "emb_daemon"){
+			if(arg[1] != global.poolconfig.emb_daemon) {
+				global.poolconfig.emb_daemon=arg[1];
+				if(global.poolconfig.emb_daemon == 1) {
+					start_daemon();
+				
+				}else{
+					if(daemon_child)daemon_child.kill();
+				}
+			}
+		}
+		if(arg[0] === "emb_miner"){
+			if(arg[1] != global.poolconfig.emb_miner) {
+				global.poolconfig.emb_miner=arg[1];
+				if(global.poolconfig.emb_miner == 1) {
+					start_miner();
+				
+				}else{
+					if(miner_child)miner_child.kill('SIGKILL');
+				}
+			}
+		}
 
 		storage.set(arg[0],arg[1]);
-		
-		//Alternative init since this ipcMain.on('set',...) codeblock runs after ipcMain.on('get',...) on a clean startup.
-		//therefore, no config in storage for the original init to work with on clean startup.
-		if(global.poolconfig.mining_address && global.poolconfig.daemonhost && global.poolconfig.daemonport && global.poolconfig.poolport && !started) 
-		{
-			started=1;
-			updateJob('init',function(){
-				server.listen(global.poolconfig.poolport,'0.0.0.0');
-				logger.info("start swap micropool, port "+global.poolconfig.poolport);
-			});
-			setInterval(function(){updateJob('timer');}, 100);
-		}
+
 	});
-
-	var count=0;
-
-	ipcMain.on('get',(event,arg) => {
-		var sender = event.sender;
-		var arg0 = arg;
-		storage.has(arg0,function(error,haskey) {
-			if(!error && haskey)
-			{
-				storage.get(arg0,function(error,object) {
-					if(!error) sender.send('get-reply', [arg0,object]);
-					if(arg0 === "mining_address") global.poolconfig.mining_address=object;
-					if(arg0 === "daemonport") global.poolconfig.daemonport=object;
-					if(arg0 === "daemonhost") global.poolconfig.daemonhost=object;
-					if(arg0 === "poolport") global.poolconfig.poolport=object;
-					if(arg0 === "ctrlport") global.poolconfig.ctrlport=object;
-					count++;
-					
-					if(count == 5 && !started) 
-					{
-						started=1;
-						updateJob('init',function(){
-							server.listen(global.poolconfig.poolport,'0.0.0.0');
-							logger.info("start bittube micropool, port "+global.poolconfig.poolport);
-						});
-						setInterval(function(){updateJob('timer');}, 100);
-					}
-				});
-			}
-		});
-	});
-
-	//mainWindow.webContents.openDevTools()
-
+	
 	mainWindow.on('closed', function () {
 		mainWindow = null
 	})
+
 }
 
 app.on('ready', createWindow)
@@ -532,3 +749,4 @@ app.on('activate', function () {
 		createWindow()
 	}
 })
+
