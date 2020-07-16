@@ -3,12 +3,13 @@ const {app, BrowserWindow, ipcMain} = require('electron')
 const storage = require('electron-json-storage');
 const contextMenu = require('electron-context-menu');
 const path = require('path');
-var os = require('os');
-var ifaces = os.networkInterfaces();
+const bonjour = require('nbonjour').create();
+const os = require('os');
+const ifaces = os.networkInterfaces();
 
-var c29b = require('./c29b_nowasm.js');
-var verify_c29b = c29b.cwrap('c29b_verify', 'number', ['array','number','array']);
-var check_diff = c29b.cwrap('check_diff', 'number', ['number','array']);
+const c29b = require('./c29b_nowasm.js');
+const verify_c29b = c29b.cwrap('c29b_verify', 'number', ['array','number','array']);
+const check_diff = c29b.cwrap('check_diff', 'number', ['number','array']);
 
 var emb_miner_status = 0;
 var emb_daemon_status = 0;
@@ -691,6 +692,8 @@ function createWindow () {
 									if(global.poolconfig.poolport) {
 										logger.info("start bittubecash mining server, port "+global.poolconfig.poolport);
 										server.listen(global.poolconfig.poolport,'0.0.0.0');
+										var service = bonjour.publish({ name: 'micropool', type: 'telnet', port: global.poolconfig.poolport });
+										service.start();
 									}
 									
 									if(global.poolconfig.emb_daemon == 1) {
@@ -724,6 +727,9 @@ function createWindow () {
 					server.close(function(){
 						logger.info("start bittubecash mining server, port "+global.poolconfig.poolport);
 						server.listen(global.poolconfig.poolport,'0.0.0.0');
+						bonjour.unpublishAll(function(){
+							bonjour.publish({ name: 'micropool', type: 'telnet', port: global.poolconfig.poolport });
+						});
 					});
 				}
 			}
