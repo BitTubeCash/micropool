@@ -547,7 +547,7 @@ function start_daemon() {
 	if(os.type() == 'Linux')
 	{
 		if(isDev()){
-			daemonpath = appRootDir + '/resources/linux/bittubecashd';
+			daemonpath = appRootDir + '/dist/bin/linux/bittubecashd';
 		}else{
 			appRootDir = path.dirname(appRootDir);
 			daemonpath = appRootDir + '/bin/bittubecashd';
@@ -556,7 +556,7 @@ function start_daemon() {
 	else
 	{
 		if(isDev()){
-			daemonpath = appRootDir + '\\resources\\win\\bittubecashd.exe';
+			daemonpath = appRootDir + '\\dist\\bin\\win\\bittubecashd.exe';
 		}else{
 			appRootDir = path.dirname(appRootDir);
 			daemonpath = appRootDir + '\\bin\\bittubecashd.exe';
@@ -564,13 +564,13 @@ function start_daemon() {
 	}
 	const spawn = require( 'child_process' ).spawn;
 	if(global.poolconfig.daemonport == 25282){
-		daemon_child = spawn( daemonpath, ['--no-zmq','--testnet']);  //add whatever switches you need here, test on command line first
+		daemon_child = spawn( daemonpath, ['--add-priority-node','mining.bittube.app','--no-zmq','--testnet']);  //add whatever switches you need here, test on command line first
 	}
 	else if(global.poolconfig.daemonport == 25382){
-		daemon_child = spawn( daemonpath, ['--no-zmq','--stagenet']);  //add whatever switches you need here, test on command line first
+		daemon_child = spawn( daemonpath, ['--add-priority-node','mining.bittube.app','--no-zmq','--stagenet']);  //add whatever switches you need here, test on command line first
 	}
 	else {
-		daemon_child = spawn( daemonpath, ['--no-zmq']);  //add whatever switches you need here, test on command line first
+		daemon_child = spawn( daemonpath, ['--add-priority-node','mining.bittube.app','--out-peers','15','--no-zmq']);  //add whatever switches you need here, test on command line first
 	}
 	var initial = 1;
 	var buffer = '';
@@ -595,7 +595,7 @@ function start_miner() {
 	if(os.type() == 'Linux')
 	{
 		if(isDev()){
-			minerpath = appRootDir + '/resources/linux/miner';
+			minerpath = appRootDir + '/dist/bin/linux/miner';
 		}else{
 			appRootDir = path.dirname(appRootDir);
 			minerpath = appRootDir + '/bin/miner';
@@ -604,7 +604,7 @@ function start_miner() {
 	else
 	{
 		if(isDev()){
-			minerpath = appRootDir + '\\resources\\win\\miner.exe';
+			minerpath = appRootDir + '\\dist\\bin\\win\\miner.exe';
 		}else{
 			appRootDir = path.dirname(appRootDir);
 			minerpath = appRootDir + '\\bin\\miner.exe';
