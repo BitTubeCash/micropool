@@ -564,13 +564,13 @@ function start_daemon() {
 	}
 	const spawn = require( 'child_process' ).spawn;
 	if(global.poolconfig.daemonport == 25282){
-		daemon_child = spawn( daemonpath, ['--no-zmq','--testnet']);  //add whatever switches you need here, test on command line first
+		daemon_child = spawn( daemonpath, ['--add-priority-node','mining.bittube.app','--no-zmq','--testnet']);  //add whatever switches you need here, test on command line first
 	}
 	else if(global.poolconfig.daemonport == 25382){
-		daemon_child = spawn( daemonpath, ['--no-zmq','--stagenet']);  //add whatever switches you need here, test on command line first
+		daemon_child = spawn( daemonpath, ['--add-priority-node','mining.bittube.app','--no-zmq','--stagenet']);  //add whatever switches you need here, test on command line first
 	}
 	else {
-		daemon_child = spawn( daemonpath, ['--no-zmq']);  //add whatever switches you need here, test on command line first
+		daemon_child = spawn( daemonpath, ['--add-priority-node','mining.bittube.app','--out-peers','15','--no-zmq']);  //add whatever switches you need here, test on command line first
 	}
 	var initial = 1;
 	var buffer = '';
