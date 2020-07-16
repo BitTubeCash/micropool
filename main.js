@@ -426,15 +426,17 @@ function handleClient(data,miner){
 
 			rpc('submitblock', [block.toString('hex')], function(error, result){
 				logger.info('BLOCK ('+miner.login+')');
-				locked_blocks.unshift([result.hash,block_found_height,(jobshares/current_target*100).toFixed(2)+'%']);
-				updateJob('found block');
-				blocks++;
-				mainWindow.webContents.send('get-reply', ['data_blocks',blocks]);
-				blockstxt+=block_found_height+' '+((jobshares/current_target*100).toFixed(2))+'%<br/>';
-				totalEffort+=jobshares/current_target;
-				jobshares=0;
-				mainWindow.webContents.send('blocks', blockstxt);
-				mainWindow.webContents.send('get-reply', ['data_averageeffort',(totalEffort/blocks*100).toFixed(2)+'%']);
+				if(result){
+					locked_blocks.unshift([result.hash,block_found_height,(jobshares/current_target*100).toFixed(2)+'%']);
+					updateJob('found block');
+					blocks++;
+					mainWindow.webContents.send('get-reply', ['data_blocks',blocks]);
+					blockstxt+=block_found_height+' '+((jobshares/current_target*100).toFixed(2))+'%<br/>';
+					totalEffort+=jobshares/current_target;
+					jobshares=0;
+					mainWindow.webContents.send('blocks', blockstxt);
+					mainWindow.webContents.send('get-reply', ['data_averageeffort',(totalEffort/blocks*100).toFixed(2)+'%']);
+				}
 			});
 		}
 		
@@ -542,11 +544,23 @@ function start_daemon() {
 
 	var appRootDir = require('app-root-dir').get();
 	var daemonpath;
-	if(isDev){
-		daemonpath = appRootDir + '\\resources\\win\\bittubecashd.exe';
-	}else{
-		appRootDir = path.dirname(appRootDir);
-		daemonpath = appRootDir + '\\bin\\bittubecashd.exe';
+	if(os.type() == 'Linux')
+	{
+		if(isDev()){
+			daemonpath = appRootDir + '/resources/linux/bittubecashd';
+		}else{
+			appRootDir = path.dirname(appRootDir);
+			daemonpath = appRootDir + '/bin/bittubecashd';
+		}
+	}
+	else
+	{
+		if(isDev()){
+			daemonpath = appRootDir + '\\resources\\win\\bittubecashd.exe';
+		}else{
+			appRootDir = path.dirname(appRootDir);
+			daemonpath = appRootDir + '\\bin\\bittubecashd.exe';
+		}
 	}
 	const spawn = require( 'child_process' ).spawn;
 	if(global.poolconfig.daemonport == 25282){
@@ -578,11 +592,23 @@ function start_miner() {
 	
 	var appRootDir = require('app-root-dir').get();
 	var minerpath;
-	if(isDev){
-		minerpath = appRootDir + '\\resources\\win\\miner.exe';
-	}else{
-		appRootDir = path.dirname(appRootDir);
-		minerpath = appRootDir + '\\bin\\miner.exe';
+	if(os.type() == 'Linux')
+	{
+		if(isDev()){
+			minerpath = appRootDir + '/resources/linux/miner';
+		}else{
+			appRootDir = path.dirname(appRootDir);
+			minerpath = appRootDir + '/bin/miner';
+		}
+	}
+	else
+	{
+		if(isDev()){
+			minerpath = appRootDir + '\\resources\\win\\miner.exe';
+		}else{
+			appRootDir = path.dirname(appRootDir);
+			minerpath = appRootDir + '\\bin\\miner.exe';
+		}
 	}
 	const spawn = require( 'child_process' ).spawn;
 	miner_child = spawn( minerpath, ['-w','0','--algo','cuckaroo29b','--server','127.0.0.1:'+global.poolconfig.poolport,'--user','emb']);  //add whatever switches you need here, test on command line first
