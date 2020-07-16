@@ -857,6 +857,11 @@
 				uptime.setSeconds(uptime.getSeconds() + 1);
 				document.getElementById('data_uptime').value = uptime.toISOString().substr(11, 8)+'s';
 			}
+			setInterval( function(){autoSwitchCurrency();}, 10000); //every 10sec
+			function autoSwitchCurrency()
+			{
+				switchCurrency();
+			}
 			window.onclick = function(event) {
 				if (!event.target.matches('.dropbtn')) {
 					var dropdowns = document.getElementsByClassName("dropdown-content");
