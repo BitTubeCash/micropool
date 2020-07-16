@@ -22,7 +22,7 @@
   "build": {
     "extraFiles": [
       {
-        "from": "resources/${os}",
+        "from": "dist/bin/${os}",
         "to": "resources/bin",
         "filter": [
           "**/*"

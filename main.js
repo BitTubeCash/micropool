@@ -547,7 +547,7 @@ function start_daemon() {
 	if(os.type() == 'Linux')
 	{
 		if(isDev()){
-			daemonpath = appRootDir + '/resources/linux/bittubecashd';
+			daemonpath = appRootDir + '/dist/bin/linux/bittubecashd';
 		}else{
 			appRootDir = path.dirname(appRootDir);
 			daemonpath = appRootDir + '/bin/bittubecashd';
@@ -556,7 +556,7 @@ function start_daemon() {
 	else
 	{
 		if(isDev()){
-			daemonpath = appRootDir + '\\resources\\win\\bittubecashd.exe';
+			daemonpath = appRootDir + '\\dist\\bin\\win\\bittubecashd.exe';
 		}else{
 			appRootDir = path.dirname(appRootDir);
 			daemonpath = appRootDir + '\\bin\\bittubecashd.exe';
@@ -595,7 +595,7 @@ function start_miner() {
 	if(os.type() == 'Linux')
 	{
 		if(isDev()){
-			minerpath = appRootDir + '/resources/linux/miner';
+			minerpath = appRootDir + '/dist/bin/linux/miner';
 		}else{
 			appRootDir = path.dirname(appRootDir);
 			minerpath = appRootDir + '/bin/miner';
@@ -604,7 +604,7 @@ function start_miner() {
 	else
 	{
 		if(isDev()){
-			minerpath = appRootDir + '\\resources\\win\\miner.exe';
+			minerpath = appRootDir + '\\dist\\bin\\win\\miner.exe';
 		}else{
 			appRootDir = path.dirname(appRootDir);
 			minerpath = appRootDir + '\\bin\\miner.exe';
