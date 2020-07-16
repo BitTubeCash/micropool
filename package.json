@@ -10,7 +10,8 @@
   "author": "sebseb7",
   "license": "0bsd",
   "devDependencies": {
-    "electron": "^4.0.6"
+    "electron": "^4.0.6",
+    "electron-builder": "^22.7.0"
   },
   "dependencies": {
     "app-root-dir": "^1.0.2",
