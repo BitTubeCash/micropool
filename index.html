@@ -583,44 +583,65 @@
 					<p>
 						<ol>
 							<li>
-								Run the latest Bittube Daemon and allow it to fully sync.
+								Turn on the embedded daemon and allow it to fully sync.
 							</li>
-								<ul>
-									<li><a href="https://github.com/ipbc-dev/bittube/releases/latest" target="_blank">Latest Bittube Daemon</a></li>
-								</ul>
 							<li>
-								Obtain and enter a standard wallet address.
+								Enter your mining address.
 							</li>
 								<ul>
+									<li>Use the built in paper wallet if you do not have one.</li>
 									<li>Mining directly to exchange is not supported with the micropool.</li>
 								</ul>
 							<li>
-								Point the Daemon-Host to the IP or DNS address of the daemon.
+								Turn on the embedded miner to start mining!
 							</li>
-								<ul>
-									<li>Use 127.0.0.1 if the daemon is on the same machine as micropool (recommended).</li>
-									<li>Use the IP assigned by the router if on the same network.</li>
-								</ul>
 						</ol>
 					</p>
-
-					<h2>Miner Setup</h2>
+					<h2>Micropool-Miner Setup</h2>
 					<p>
 						<ol>
 							<li>
-								Point the pool or connection address to the IP address of the machine running the micropool.
+								Install Micropool-Miner for rigs located on the same network as micropool.
 							</li>
 							<li>
-								Set the mining port to 25650.
+								Set the username as preferred. This will be used to identify your mining rig.
+								<ul>
+									<li>Optionally, append a number prefixed by a dot after the username (e.g. workername.10) to set the share difficulty for the rig.
+									Difficulty defaults to 1 when left unset. As a general guideline setting the difficulty 1:1 with your miners graphrate will yield approximately 1 share every 40 seconds.</li>
+								</ul>
+							</li>
+							<li>
+								Press the "Scan" button to scan your network for valid pool ports.
+								<ul>
+									<li>Confirm and select the micropool connection using the dropdown list.</li>
+								</ul>
+							</li>
+							<li>
+								Press the "Start/Stop" switch to start mining!
+							</li>
+						</ol>
+					</p>
+					<h2>3rd-Party Miner Setup</h2>
+					<p>
+						<ol>
+							<li>
+								Point the pool or connection address to the IP address provided by the micropool.
+								<ul>
+									<li>127.0.0.1 may be used if the rig is located on the same machine as micropool.</li>
+								</ul>
+							</li>
+							<li>
+								Set the mining port to 25650 (default).
 							</li>
 							<li>
 								Set the username and password as preferred. These are used to identify mining rigs within the micropool.
 							</li>
-							<li>
-								Optionally, append a number prefixed by a dot after the username (e.g. workername.10) to set the share difficulty for the rig. 
-								Difficulty defaults to 1 when left unset. As a general guideline setting the difficulty 1:1 with your miners graphrate will yield 
-								approximately 1 share every 50 seconds.
-							</li>
+							<ul>
+								<li>
+									Optionally, append a number prefixed by a dot after the username (e.g. workername.10) to set the share difficulty for the rig. 
+									Difficulty defaults to 1 when left unset. As a general guideline setting the difficulty 1:1 with your miners graphrate will yield approximately 1 share every 40 seconds.
+								</li>
+							</ul>
 						</ol>
 					</p>
 
@@ -835,6 +856,11 @@
 			{
 				uptime.setSeconds(uptime.getSeconds() + 1);
 				document.getElementById('data_uptime').value = uptime.toISOString().substr(11, 8)+'s';
+			}
+			setInterval( function(){autoSwitchCurrency();}, 10000); //every 10sec
+			function autoSwitchCurrency()
+			{
+				switchCurrency();
 			}
 			window.onclick = function(event) {
 				if (!event.target.matches('.dropbtn')) {
