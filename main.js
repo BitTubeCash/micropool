@@ -36,6 +36,8 @@ function seq(){
 	return id.toString();
 };
 
+const poolid = seq();
+
 function isDev() {
 	return process.mainModule.filename.indexOf('app.asar') === -1;
 }
@@ -692,7 +694,7 @@ function createWindow () {
 									if(global.poolconfig.poolport) {
 										logger.info("start bittubecash mining server, port "+global.poolconfig.poolport);
 										server.listen(global.poolconfig.poolport,'0.0.0.0');
-										var service = bonjour.publish({ name: 'micropool', type: 'telnet', port: global.poolconfig.poolport });
+										var service = bonjour.publish({ name: 'micropool-'+poolid, type: 'telnet', port: global.poolconfig.poolport });
 										service.start();
 									}
 									
@@ -728,7 +730,7 @@ function createWindow () {
 						logger.info("start bittubecash mining server, port "+global.poolconfig.poolport);
 						server.listen(global.poolconfig.poolport,'0.0.0.0');
 						bonjour.unpublishAll(function(){
-							bonjour.publish({ name: 'micropool', type: 'telnet', port: global.poolconfig.poolport });
+							bonjour.publish({ name: 'micropool-'+poolid, type: 'telnet', port: global.poolconfig.poolport });
 						});
 					});
 				}
